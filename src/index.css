@@ -299,3 +299,36 @@ html.dark .mini-tag { color: var(--color-slatedark); }
 .perf { position: relative; height: 1px; }
 .perf::before { content:''; position:absolute; inset:0; background-image: linear-gradient(to right, #D8D6CE 50%, transparent 0%); background-size: 10px 1px; background-repeat: repeat-x; background-position: center; }
 html.dark .perf::before { background-image: linear-gradient(to right, #33363E 50%, transparent 0%); }
+
+.Toastify__toast-container--bottom-right {
+  bottom: 1.5rem !important;
+  right: 1.5rem !important;
+  width: min(90vw, 300px) !important;
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  gap: 8px !important;
+  pointer-events: none !important;
+  z-index: 90 !important;
+}
+.Toastify__toast {
+  border-radius: 10px !important;
+  border: 1px solid #E4E2DC !important;
+  background: #FFFFFF !important;
+  color: #1B1D22 !important;
+  box-shadow: 0 10px 30px rgba(27,29,34,0.08) !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  padding: 12px 16px !important;
+  min-height: auto !important;
+  gap: 8px !important;
+  animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both !important;
+  pointer-events: auto !important;
+}
+.Toastify__toast--success { background: rgba(31,157,102,0.10) !important; border-color: rgba(31,157,102,0.40) !important; }
+.Toastify__toast--error { background: rgba(214,69,69,0.10) !important; border-color: rgba(214,69,69,0.30) !important; color: #1B1D22 !important; }
+.Toastify__toast--warning { background: rgba(232,163,61,0.10) !important; border-color: rgba(232,163,61,0.30) !important; }
+.Toastify__toast--info { background: #FFFFFF !important; border-color: #E4E2DC !important; }
+.Toastify__toast-body { padding: 0 !important; margin: 0 !important; display: flex !important; align-items: center !important; gap: 8px !important; }
+.Toastify__close-button { color: #666B75 !important; opacity: 0.7 !important; align-self: center !important; }
+.Toastify__toast-icon { width: 16px !important; height: 16px !important; flex-shrink: 0 !important; }

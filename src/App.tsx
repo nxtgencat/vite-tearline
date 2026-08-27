@@ -31,7 +31,16 @@ function App() {
           <ErrorBoundary>
             <AppRoutes />
           </ErrorBoundary>
-          <ToastContainer position="top-right" autoClose={2500} theme="light" />
+          <ToastContainer
+            position="bottom-right"
+            autoClose={2600}
+            hideProgressBar
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="light"
+            toastStyle={{ borderRadius: '10px' }}
+          />
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
