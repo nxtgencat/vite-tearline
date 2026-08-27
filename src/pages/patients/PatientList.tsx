@@ -116,18 +116,20 @@ function PatientList() {
 
   return (
     <div>
-      <PageHeader title="Patients" subtitle="Manage patient registrations, search & filter" action={can('patients.create') ? <Button onClick={openCreate}>+ Add Patient</Button> : null} />
+      <PageHeader title="Patients" subtitle="Manage patient registrations, search & filter" action={can('patients.create') ? <Button onClick={openCreate} className="w-full sm:w-auto justify-center">+ Add Patient</Button> : null} />
 
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="flex-1 min-w-[220px]"><SearchBar value={query} onChange={setQuery} placeholder="Search by name, email, mobile, ID…" /></div>
-        <FilterPanel label="Status" value={status} options={[{ label: 'All', value: 'All' }, { label: 'Active', value: 'Active' }, { label: 'Critical', value: 'Critical' }, { label: 'Discharged', value: 'Discharged' }]} onChange={v => { setStatus(v); setPage(1) }} />
-        <FilterPanel label="Sort" value={sort} options={[{ label: 'Recent', value: 'recent' }, { label: 'Name', value: 'name' }, { label: 'Age', value: 'age' }]} onChange={setSort} />
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex-1 min-w-0"><SearchBar value={query} onChange={setQuery} placeholder="Search by name, email, mobile, ID…" /></div>
+        <div className="flex gap-3 flex-wrap">
+          <FilterPanel label="Status" value={status} options={[{ label: 'All', value: 'All' }, { label: 'Active', value: 'Active' }, { label: 'Critical', value: 'Critical' }, { label: 'Discharged', value: 'Discharged' }]} onChange={v => { setStatus(v); setPage(1) }} />
+          <FilterPanel label="Sort" value={sort} options={[{ label: 'Recent', value: 'recent' }, { label: 'Name', value: 'name' }, { label: 'Age', value: 'age' }]} onChange={setSort} />
+        </div>
       </div>
 
-      {loading ? <Loader /> : filtered.length === 0 ? <EmptyState title="No patients" hint="Try adjusting search or add a new patient" action={can('patients.create') ? <Button onClick={openCreate}>Add Patient</Button> : undefined} /> : (
+      {loading ? <Loader /> : filtered.length === 0 ? <EmptyState title="No patients" hint="Try adjusting search or add a new patient" action={can('patients.create') ? <Button onClick={openCreate} className="w-full sm:w-auto justify-center">Add Patient</Button> : undefined} /> : (
         <>
           <Table columns={columns as never} data={paged as never} />
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between items-center mt-4">
             <p className="text-xs text-slate dark:text-slatedark">{filtered.length} total • page {page}/{totalPages}</p>
             <Pagination page={page} totalPages={totalPages} onChange={setPage} />
           </div>
@@ -148,7 +150,7 @@ function PatientList() {
           </div>
           <div>
             <label className="block"><span className="text-sm font-medium mb-1.5 block">Address (search via OSM)</span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <input value={mapQuery} onChange={e => setMapQuery(e.target.value)} placeholder="Search location e.g. Delhi" className="field flex-1" />
                 <Button type="button" variant="outline" onClick={onSearchMap}>Search</Button>
               </div>

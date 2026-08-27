@@ -44,8 +44,8 @@ function PrescriptionList() {
 
   return (
     <div>
-      <PageHeader title="Prescriptions" subtitle="Create, edit, view history & export PDF" action={can('prescriptions.create') ? <Button onClick={()=>{ setPatientName(''); setDoctorName(''); setMeds([{ name: '', dosage: '', duration: '', instructions: '' }]); setEditingId(null); setShow(true)}}>+ New Prescription</Button> : null} />
-      <div className="grid md:grid-cols-2 gap-4">
+      <PageHeader title="Prescriptions" subtitle="Create, edit, view history & export PDF" action={can('prescriptions.create') ? <Button className="w-full sm:w-auto justify-center" onClick={()=>{ setPatientName(''); setDoctorName(''); setMeds([{ name: '', dosage: '', duration: '', instructions: '' }]); setEditingId(null); setShow(true)}}>+ New Prescription</Button> : null} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map(p => (
           <Card key={p.id}>
             <div className="flex justify-between items-start">
@@ -78,7 +78,7 @@ function PrescriptionList() {
               <Input label="Instructions" value={m.instructions} onChange={e=>{ const n=[...meds]; n[i].instructions=e.target.value; setMeds(n)}} />
             </div>
           ))}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="text-xs" onClick={()=>setMeds([...meds, { name: '', dosage: '', duration: '', instructions: '' }])}>+ Add Medicine</Button>
             {meds.length>1 && <Button variant="ghost" className="text-xs" onClick={()=>setMeds(meds.slice(0,-1))}>Remove last</Button>}
           </div>

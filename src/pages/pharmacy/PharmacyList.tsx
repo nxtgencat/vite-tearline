@@ -51,15 +51,15 @@ function PharmacyList() {
 
   return (
     <div>
-      <PageHeader title="Pharmacy" subtitle="Medicine CRUD, stock, categories & suppliers" action={<Button onClick={()=>{ setForm({ name: '', category: 'Analgesic', stock: 10, supplier: '', price: 10, expiry: '2027-01-01' }); setEditing(null); setShow(true)}}>+ Add Medicine</Button>} />
+      <PageHeader title="Pharmacy" subtitle="Medicine CRUD, stock, categories & suppliers" action={<Button className="w-full sm:w-auto justify-center" onClick={()=>{ setForm({ name: '', category: 'Analgesic', stock: 10, supplier: '', price: 10, expiry: '2027-01-01' }); setEditing(null); setShow(true)}}>+ Add Medicine</Button>} />
       {lowStock.length>0 && <div className="mb-4 p-3 rounded-lg bg-rose/10 border border-rose/20 text-sm text-rose">⚠ Low stock alert: {lowStock.map(m=>m.name).join(', ')} — reorder soon</div>}
-      <div className="mb-4 max-w-sm"><SearchBar value={query} onChange={setQuery} placeholder="Search medicines…" /></div>
+      <div className="mb-4 w-full sm:max-w-sm"><SearchBar value={query} onChange={setQuery} placeholder="Search medicines…" /></div>
       <Table columns={columns as never} data={filtered as never} />
 
       <Modal open={show} onClose={()=>setShow(false)} title={editing?'Edit Medicine':'Add Medicine'}>
         <div className="space-y-3">
           <Input label="Name" value={form.name} onChange={e=>setForm({...form, name: e.target.value})} />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block"><span className="text-sm font-medium mb-1.5 block">Category</span>
               <select value={form.category} onChange={e=>setForm({...form, category: e.target.value})} className="field">
                 <option>Analgesic</option><option>Antibiotic</option><option>Cardiac</option><option>Antihistamine</option><option>Diabetic</option>

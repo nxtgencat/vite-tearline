@@ -64,10 +64,10 @@ function AppointmentList() {
 
   return (
     <div>
-      <PageHeader title="Appointments" subtitle="Book, cancel, reschedule & view by status" action={can('appointments.create') ? <Button onClick={()=>{ setReschedId(null); setShow(true) }}>+ Book Appointment</Button> : null} />
-      <div className="flex gap-2 mb-4">
+      <PageHeader title="Appointments" subtitle="Book, cancel, reschedule & view by status" action={can('appointments.create') ? <Button onClick={()=>{ setReschedId(null); setShow(true) }} className="w-full sm:w-auto justify-center">+ Book Appointment</Button> : null} />
+      <div className="flex flex-wrap gap-2 mb-4">
         {(['All','Upcoming','Completed','Cancelled'] as const).map(s => (
-          <button key={s} onClick={()=>setFilter(s)} className={`px-4 py-1.5 rounded-full text-sm border ${filter===s ? 'bg-ink dark:bg-paperdark text-paper dark:text-inkdark border-ink' : 'border-line dark:border-linedark'}`}>{s}</button>
+          <button key={s} onClick={()=>setFilter(s)} className={`px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm border ${filter===s ? 'bg-ink dark:bg-paperdark text-paper dark:text-inkdark border-ink' : 'border-line dark:border-linedark'}`}>{s}</button>
         ))}
       </div>
       <Table columns={columns as never} data={filtered as never} />
@@ -81,7 +81,7 @@ function AppointmentList() {
           <label className="block"><span className="text-sm font-medium mb-1.5 block">Doctor</span>
             <select {...register('doctorId')} className="field"><option value="">Select doctor</option>{doctors.map(d=> <option key={d.id} value={d.id}>{d.name} — {d.department}</option>)}</select>
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input label="Date" type="date" {...register('date')} />
             <label className="block"><span className="text-sm font-medium mb-1.5 block">Time Slot</span>
               <select {...register('time')} className="field"><option>09:00</option><option>10:00</option><option>11:30</option><option>14:00</option><option>15:30</option><option>16:30</option></select>

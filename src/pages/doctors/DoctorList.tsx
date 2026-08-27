@@ -51,9 +51,9 @@ function DoctorList() {
 
   return (
     <div>
-      <PageHeader title="Doctors" subtitle="Search, filter by department, view availability" action={can('doctors.create') ? <Button onClick={openCreate}>+ Add Doctor</Button> : null} />
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="flex-1 min-w-[220px]"><SearchBar value={query} onChange={setQuery} placeholder="Search doctors…" /></div>
+      <PageHeader title="Doctors" subtitle="Search, filter by department, view availability" action={can('doctors.create') ? <Button onClick={openCreate} className="w-full sm:w-auto justify-center">+ Add Doctor</Button> : null} />
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex-1 min-w-0"><SearchBar value={query} onChange={setQuery} placeholder="Search doctors…" /></div>
         <FilterPanel label="Department" value={dept} options={depts.map(d=>({label:d,value:d}))} onChange={setDept} />
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -84,7 +84,7 @@ function DoctorList() {
       <Modal open={show} onClose={()=>setShow(false)} title={editing?'Edit Doctor':'Add Doctor'}>
         <form onSubmit={handleSubmit(onSubmit as never)} className="space-y-3">
           <Input label="Name" {...register('name')} />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label className="block"><span className="text-sm font-medium mb-1.5 block">Department</span><select {...register('department')} className="field"><option>Cardiology</option><option>Orthopedics</option><option>Neurology</option><option>Pediatrics</option><option>Dermatology</option><option>ENT</option></select></label>
             <Input label="Qualification" {...register('qualification')} />
             <Input label="Experience (years)" type="number" {...register('experience')} />

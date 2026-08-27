@@ -37,32 +37,32 @@ function Dashboard() {
     <div className="space-y-6">
       <PageHeader title="Dashboard" subtitle="Hospital overview & operational summary" action={<Badge variant="cobalt">Live • 30 min session</Badge>} />
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         {stats.map(s => (
-          <Card key={s.label} className="p-4 hover:shadow-md transition-shadow">
-            <div className={`w-8 h-8 rounded-lg ${s.color} text-white grid place-content-center mb-3`}>{s.icon}</div>
-            <p className="text-2xl font-semibold">{s.value}</p>
+          <Card key={s.label} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
+            <div className={`w-8 h-8 rounded-lg ${s.color} text-white grid place-content-center mb-2 sm:mb-3`}>{s.icon}</div>
+            <p className="text-xl sm:text-2xl font-semibold">{s.value}</p>
             <p className="text-xs font-medium">{s.label}</p>
-            <p className="text-[11px] text-slate dark:text-slatedark mt-1">{s.sub}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate dark:text-slatedark mt-1 truncate">{s.sub}</p>
           </Card>
         ))}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
         <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Revenue Summary</h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <h3 className="font-semibold text-sm sm:text-base">Revenue Summary</h3>
             <Badge variant="mint">Last 7 days</Badge>
           </div>
-          <div className="h-40 flex items-end gap-2">
+          <div className="h-32 sm:h-40 flex items-end gap-1 sm:gap-2">
             {[40, 65, 50, 85, 70, 95, 60].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2">
+              <div key={i} className="flex-1 flex flex-col items-center gap-1 sm:gap-2">
                 <div className="w-full rounded-t-lg bg-cobalt/80 hover:bg-cobalt transition-colors" style={{ height: `${h}%` }} />
-                <span className="text-[10px] text-slate dark:text-slatedark">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
+                <span className="text-[9px] sm:text-[10px] text-slate dark:text-slatedark">{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i]}</span>
               </div>
             ))}
           </div>
-          <div className="mt-4 flex gap-2 text-xs">
+          <div className="mt-4 flex flex-wrap gap-2 text-[11px] sm:text-xs">
             <span className="px-2 py-1 rounded-full bg-mint/15 text-mint">Consultation • 48%</span>
             <span className="px-2 py-1 rounded-full bg-amber/15 text-amber">Lab • 32%</span>
             <span className="px-2 py-1 rounded-full bg-cobalt/10 text-cobalt">Pharmacy • 20%</span>
@@ -71,7 +71,7 @@ function Dashboard() {
 
         <Card>
           <h3 className="font-semibold mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { label: 'Register Patient', path: '/patients' },
               { label: 'Book Appointment', path: '/appointments' },
@@ -104,10 +104,10 @@ function Dashboard() {
         <Card>
           <h3 className="font-semibold mb-3 flex items-center gap-2"><FiBell className="w-4 h-4" /> Recent Activities</h3>
           <ul className="space-y-2 text-sm">
-            <li className="flex gap-2"><span className="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0" /> Patient Aarav Mehta registered by receptionist</li>
-            <li className="flex gap-2"><span className="w-1.5 h-1.5 rounded-full bg-cobalt mt-2 shrink-0" /> Dr. Neha updated prescription PR001</li>
-            <li className="flex gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber mt-2 shrink-0" /> Lab report L001 marked completed</li>
-            <li className="flex gap-2"><span className="w-1.5 h-1.5 rounded-full bg-rose mt-2 shrink-0" /> Invoice B001 pending payment</li>
+            <li className="flex flex-wrap gap-2"><span className="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0" /> Patient Aarav Mehta registered by receptionist</li>
+            <li className="flex flex-wrap gap-2"><span className="w-1.5 h-1.5 rounded-full bg-cobalt mt-2 shrink-0" /> Dr. Neha updated prescription PR001</li>
+            <li className="flex flex-wrap gap-2"><span className="w-1.5 h-1.5 rounded-full bg-amber mt-2 shrink-0" /> Lab report L001 marked completed</li>
+            <li className="flex flex-wrap gap-2"><span className="w-1.5 h-1.5 rounded-full bg-rose mt-2 shrink-0" /> Invoice B001 pending payment</li>
           </ul>
         </Card>
       </div>

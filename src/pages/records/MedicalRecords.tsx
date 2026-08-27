@@ -43,8 +43,8 @@ function MedicalRecords() {
 
   return (
     <div>
-      <PageHeader title="Medical Records" subtitle="Diagnosis, treatment, notes, allergies & previous visits" action={<Button onClick={()=>{ setForm({ patient: '', diagnosis: '', treatment: '', notes: '', allergies: '', visits: 1 }); setEditing(null); setShow(true)}}>+ Add Record</Button>} />
-      <div className="grid md:grid-cols-2 gap-4">
+      <PageHeader title="Medical Records" subtitle="Diagnosis, treatment, notes, allergies & previous visits" action={<Button className="w-full sm:w-auto justify-center" onClick={()=>{ setForm({ patient: '', diagnosis: '', treatment: '', notes: '', allergies: '', visits: 1 }); setEditing(null); setShow(true)}}>+ Add Record</Button>} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map(r => (
           <Card key={r.id} className="space-y-3">
             <div className="flex justify-between items-start">

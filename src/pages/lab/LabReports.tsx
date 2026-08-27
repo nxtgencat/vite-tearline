@@ -38,11 +38,11 @@ function LabReports() {
 
   return (
     <div>
-      <PageHeader title="Laboratory" subtitle="Test requests, reports, preview & download" action={<Button onClick={()=>setShow(true)}>+ New Test Request</Button>} />
-      <div className="flex gap-2 mb-4">
+      <PageHeader title="Laboratory" subtitle="Test requests, reports, preview & download" action={<Button onClick={()=>setShow(true)} className="w-full sm:w-auto justify-center">+ New Test Request</Button>} />
+      <div className="flex flex-wrap gap-2 mb-4">
         {['All','Pending','In Progress','Completed'].map(s=> <button key={s} onClick={()=>setFilter(s)} className={`px-4 py-1.5 rounded-full text-sm border ${filter===s ? 'bg-ink dark:bg-paperdark text-paper dark:text-inkdark' : 'border-line dark:border-linedark'}`}>{s}</button>)}
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(r => (
           <Card key={r.id} className="space-y-3">
             <div className="flex justify-between items-start">
@@ -51,7 +51,7 @@ function LabReports() {
             </div>
             <p className="text-xs text-slate dark:text-slatedark">{new Date(r.date).toLocaleDateString()}</p>
             {r.fileName && <p className="text-xs flex items-center gap-1">📄 {r.fileName}</p>}
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {r.fileName && <Button variant="outline" className="text-xs py-1 flex-1" onClick={()=>setPreview(fileUrl || r.fileName || null)}>Preview</Button>}
               <select value={r.status} onChange={e=>updateStatus(r.id, e.target.value as never)} className="flex-1 px-2 py-1 rounded-lg border border-line dark:border-linedark text-xs">
                 <option>Pending</option><option>In Progress</option><option>Completed</option>

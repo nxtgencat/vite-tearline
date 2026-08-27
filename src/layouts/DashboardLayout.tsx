@@ -10,7 +10,7 @@ function DashboardLayout() {
       <Sidebar open={open} onClose={() => setOpen(false)} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar onMenu={() => setOpen(v => !v)} />
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-[1400px] w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-6 md:p-8 max-w-[1400px] w-full mx-auto overflow-x-hidden">
           <Outlet />
         </main>
         <footer className="border-t border-line dark:border-linedark py-4 text-center text-xs text-slate dark:text-slatedark">

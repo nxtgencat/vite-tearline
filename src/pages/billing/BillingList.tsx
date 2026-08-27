@@ -52,7 +52,7 @@ function BillingList() {
 
   return (
     <div>
-      <PageHeader title="Billing & Payments" subtitle="Consultation, lab, pharmacy charges with discounts & taxes" action={<div className="flex gap-2"><Button variant="outline" onClick={()=>exportAll('csv')}>CSV</Button><Button variant="outline" onClick={()=>exportAll('excel')}>Excel</Button><Button variant="outline" onClick={()=>exportAll('pdf')}>PDF</Button><Button onClick={()=>setShow(true)}>+ Create Invoice</Button></div>} />
+      <PageHeader title="Billing & Payments" subtitle="Consultation, lab, pharmacy charges with discounts & taxes" action={<div className="flex flex-wrap gap-2"><Button variant="outline" className="text-xs px-3 py-1.5" onClick={()=>exportAll('csv')}>CSV</Button><Button variant="outline" className="text-xs px-3 py-1.5" onClick={()=>exportAll('excel')}>Excel</Button><Button variant="outline" className="text-xs px-3 py-1.5" onClick={()=>exportAll('pdf')}>PDF</Button><Button onClick={()=>setShow(true)} className="w-full sm:w-auto justify-center">+ Create Invoice</Button></div>} />
       <Table columns={columns as never} data={items as never} />
       <div className="mt-4 p-4 rounded-xl bg-cobalt/5 border border-cobalt/10 flex justify-between text-sm">
         <span>Total Revenue</span><span className="font-semibold">{formatCurrency(items.reduce((s,i)=>s+i.total,0))}</span>
@@ -66,7 +66,7 @@ function BillingList() {
               <option>Consultation</option><option>Laboratory</option><option>Pharmacy</option>
             </select>
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Input label="Amount" type="number" value={String(form.amount)} onChange={e=>setForm({...form, amount: Number(e.target.value)})} />
             <Input label="Discount" type="number" value={String(form.discount)} onChange={e=>setForm({...form, discount: Number(e.target.value)})} />
             <Input label="Tax %" type="number" value={String(form.tax)} onChange={e=>setForm({...form, tax: Number(e.target.value)})} />
