@@ -5,7 +5,7 @@ import Button from '@/components/ui/Button'
 import { getStorage } from '@/services/storage'
 import { seedPatients, seedDoctors, seedAppointments, seedBilling, seedMedicines, seedLabReports } from '@/services/mockData'
 import { exportToCSV, exportToExcel, exportToPDF } from '@/utils/export'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 
 function Reports() {
   const data = useMemo(()=>({

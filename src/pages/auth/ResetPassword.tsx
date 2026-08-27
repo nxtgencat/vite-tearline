@@ -6,7 +6,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import AuthLayout from '@/layouts/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 
 const schema = yup.object({ password: yup.string().min(6).required(), confirm: yup.string().oneOf([yup.ref('password')], 'Mismatch').required() })
 

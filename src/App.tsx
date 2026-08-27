@@ -1,7 +1,6 @@
 import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { Sonner } from '@/components/ui/Sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { NotificationProvider } from '@/context/NotificationContext'
 import AppRoutes from '@/routes'
@@ -31,16 +30,7 @@ function App() {
           <ErrorBoundary>
             <AppRoutes />
           </ErrorBoundary>
-          <ToastContainer
-            position="bottom-right"
-            autoClose={2600}
-            hideProgressBar
-            closeOnClick
-            pauseOnHover
-            draggable
-            theme="light"
-            toastStyle={{ borderRadius: '10px' }}
-          />
+          <Sonner />
         </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>

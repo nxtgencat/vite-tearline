@@ -7,19 +7,20 @@ import Modal from '@/components/ui/Modal'
 import FileUpload from '@/components/ui/FileUpload'
 import Input from '@/components/ui/Input'
 import { getStorage, setStorage } from '@/services/storage'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 
-type RecordItem = { id: string; patient: string; diagnosis: string; treatment: string; notes: string; allergies: string; visits: number; docs: string[] }
+type RecordItem = { id: string; patient: string; diagnosis: string; treatment: string; notes: string; allergies: string; visits: number; docs: string[]; history: string[] }
 
 const KEY = 'hms_records'
 const seed: RecordItem[] = [
-  { id: 'R001', patient: 'Aarav Mehta', diagnosis: 'Hypertension Stage 1', treatment: 'Lifestyle + Amlodipine', notes: 'BP 140/90, advise low sodium', allergies: 'Penicillin', visits: 3, docs: [] },
-  { id: 'R002', patient: 'Sneha Kapoor', diagnosis: 'Asthma', treatment: 'Inhaler', notes: 'Wheezing on exertion', allergies: 'Dust', visits: 5, docs: [] },
+  { id: 'R001', patient: 'Aarav Mehta', diagnosis: 'Hypertension Stage 1', treatment: 'Lifestyle + Amlodipine', notes: 'BP 140/90, advise low sodium', allergies: 'Penicillin', visits: 3, docs: [], history: ['2026-04-10: BP 145/92, prescribed Amlodipine', '2026-05-12: BP 138/88, lifestyle review', '2026-06-01: BP 140/90, continue meds'] },
+  { id: 'R002', patient: 'Sneha Kapoor', diagnosis: 'Asthma', treatment: 'Inhaler', notes: 'Wheezing on exertion', allergies: 'Dust', visits: 5, docs: [], history: ['2026-03-15: Wheezing, inhaler dose adjusted', '2026-04-20: Peak flow 85%, stable'] },
 ]
 
 function MedicalRecords() {
   const [items, setItems] = useState<RecordItem[]>(() => getStorage(KEY, seed))
   const [show, setShow] = useState(false)
+  const [historyView, setHistoryView] = useState<string | null>(null)
   const [editing, setEditing] = useState<string | null>(null)
   const [form, setForm] = useState({ patient: '', diagnosis: '', treatment: '', notes: '', allergies: '', visits: 1 })
   const [uploads, setUploads] = useState<string[]>([])
@@ -30,7 +31,7 @@ function MedicalRecords() {
     if (editing) {
       next = items.map(i => i.id === editing ? { ...i, ...form, docs: [...i.docs, ...uploads] } : i)
     } else {
-      next = [...items, { id: 'R'+Date.now(), ...form, docs: [...uploads] }]
+      next = [...items, { id: 'R'+Date.now(), ...form, docs: [...uploads], history: [`${new Date().toISOString().slice(0,10)}: ${form.diagnosis} — ${form.treatment}`] }]
     }
     setStorage(KEY, next); setItems(next); setShow(false); setEditing(null); setUploads([]); toast.success('Saved')
   }
@@ -58,9 +59,16 @@ function MedicalRecords() {
               <p><span className="text-slate dark:text-slatedark">Notes:</span> {r.notes}</p>
             </div>
             {r.docs.length>0 && <div className="flex flex-wrap gap-1">{r.docs.map(d=> <a key={d} href={d} target="_blank" rel="noreferrer" className="text-xs text-cobalt underline">Document</a>)}</div>}
+            <div className="mt-2 p-2 rounded-lg bg-paper border border-line text-xs">
+              <p className="font-medium">Previous Visits ({r.history.length})</p>
+              <ul className="mt-1 space-y-1 text-slate dark:text-slatedark">
+                {r.history.slice(0,2).map((h,i)=><li key={i}>• {h}</li>)}
+                {r.history.length>2 && <li className="text-cobalt">+{r.history.length-2} more</li>}
+              </ul>
+            </div>
             <div className="flex gap-2 pt-2 border-t border-line dark:border-linedark">
               <Button variant="outline" className="text-xs py-1.5" onClick={()=>openEdit(r.id)}>Edit</Button>
-              <Button variant="ghost" className="text-xs py-1.5" onClick={()=>toast.success('History viewed')}>View History</Button>
+              <Button variant="ghost" className="text-xs py-1.5" onClick={()=>setHistoryView(r.id)}>View History</Button>
             </div>
           </Card>
         ))}
@@ -77,6 +85,22 @@ function MedicalRecords() {
           {uploads.length>0 && <p className="text-xs text-mint">{uploads.length} file(s) ready</p>}
           <div className="flex justify-end gap-2"><Button variant="ghost" onClick={()=>setShow(false)}>Cancel</Button><Button onClick={save}>Save</Button></div>
         </div>
+      </Modal>
+
+      <Modal open={!!historyView} onClose={()=>setHistoryView(null)} title="Complete Medical History">
+        {(() => {
+          const rec = items.find(x=>x.id===historyView)
+          if (!rec) return null
+          return (
+            <div className="space-y-3 text-sm">
+              <p className="font-medium">{rec.patient} • {rec.id}</p>
+              <div className="space-y-2">
+                {rec.history.map((h,i)=> <div key={i} className="p-2 rounded-lg bg-paper border border-line text-xs">{h}</div>)}
+              </div>
+              {rec.docs.length>0 && <div><p className="font-medium text-xs mb-1">Uploaded Documents</p><div className="flex flex-wrap gap-2">{rec.docs.map(d=> <a key={d} href={d} target="_blank" rel="noreferrer" className="px-2 py-1 rounded-full bg-cobalt/10 text-cobalt text-xs">View Doc</a>)}</div></div>}
+            </div>
+          )
+        })()}
       </Modal>
     </div>
   )

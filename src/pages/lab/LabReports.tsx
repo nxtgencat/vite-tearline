@@ -8,7 +8,7 @@ import FileUpload from '@/components/ui/FileUpload'
 import Input from '@/components/ui/Input'
 import { getStorage, setStorage } from '@/services/storage'
 import { seedLabReports, type LabReport } from '@/services/mockData'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 import { sendEmail } from '@/services/email'
 
 const KEY = 'hms_lab'

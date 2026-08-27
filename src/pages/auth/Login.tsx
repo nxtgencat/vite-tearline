@@ -7,7 +7,7 @@ import AuthLayout from '@/layouts/AuthLayout'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 import { ALL_ROLES, ROLE_LABELS, type Role } from '@/constants/roles'
 
 const schema = yup.object({

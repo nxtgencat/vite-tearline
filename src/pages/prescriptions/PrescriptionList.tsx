@@ -6,7 +6,7 @@ import Modal from '@/components/ui/Modal'
 import Input from '@/components/ui/Input'
 import { getStorage, setStorage } from '@/services/storage'
 import { seedPrescriptions, type Prescription } from '@/services/mockData'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 import { exportToPDF } from '@/utils/export'
 import { usePermission } from '@/hooks/usePermission'
 

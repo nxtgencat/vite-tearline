@@ -9,7 +9,7 @@ import { getStorage, setStorage } from '@/services/storage'
 import { seedBilling, type Billing } from '@/services/mockData'
 import { formatCurrency } from '@/utils/format'
 import { exportToCSV, exportToExcel, exportToPDF } from '@/utils/export'
-import { toast } from 'react-toastify'
+import { toast } from '@/components/ui/Sonner'
 import { sendEmail } from '@/services/email'
 
 const KEY = 'hms_billing'
@@ -17,6 +17,7 @@ const KEY = 'hms_billing'
 function BillingList() {
   const [items, setItems] = useState<Billing[]>(() => getStorage(KEY, seedBilling))
   const [show, setShow] = useState(false)
+  const [receipt, setReceipt] = useState<Billing | null>(null)
   const [form, setForm] = useState({ patientName: '', type: 'Consultation', amount: 1000, discount: 0, tax: 10 })
 
   const total = useMemo(() => form.amount - form.discount + (form.amount * form.tax / 100), [form])
@@ -47,7 +48,12 @@ function BillingList() {
     { key: 'tax', header: 'Tax %', render: (r: Billing)=> `${r.tax}%` },
     { key: 'total', header: 'Total', render: (r: Billing)=> <span className="font-semibold">{formatCurrency(r.total)}</span> },
     { key: 'status', header: 'Status', render: (r: Billing)=> <Badge variant={r.status==='Paid'?'mint':r.status==='Pending'?'amber':'rose'}>{r.status}</Badge> },
-    { key: 'actions', header: 'Actions', render: (r: Billing)=> r.status!=='Paid' ? <button onClick={()=>markPaid(r.id)} className="px-2 py-1 rounded-full border border-mint text-mint text-xs">Mark Paid</button> : <span className="text-xs text-slate dark:text-slatedark">—</span> },
+    { key: 'actions', header: 'Actions', render: (r: Billing)=> (
+      <div className="flex gap-1 flex-wrap">
+        {r.status!=='Paid' ? <button onClick={()=>markPaid(r.id)} className="px-2 py-1 rounded-full border border-mint text-mint text-xs">Mark Paid</button> : <button onClick={()=>setReceipt(r)} className="px-2 py-1 rounded-full border border-cobalt text-cobalt text-xs">Receipt</button>}
+        <button onClick={()=>setReceipt(r)} className="px-2 py-1 rounded-full border border-line text-xs">View</button>
+      </div>
+    ) },
   ]
 
   return (
@@ -76,6 +82,37 @@ function BillingList() {
           </div>
           <div className="flex justify-end gap-2"><Button variant="ghost" onClick={()=>setShow(false)}>Cancel</Button><Button onClick={add}>Create</Button></div>
         </div>
+      </Modal>
+
+      <Modal open={!!receipt} onClose={()=>setReceipt(null)} title={receipt ? `Invoice ${receipt.id} — Receipt` : 'Receipt'}>
+        {receipt && (
+          <div className="space-y-3 text-sm">
+            <div className="p-4 rounded-lg bg-paper border border-line">
+              <div className="flex justify-between items-start">
+                <div><p className="font-display font-semibold">MediCare Hospital</p><p className="text-xs text-slate">Central Hospital, New Delhi</p></div>
+                <Badge variant={receipt.status==='Paid'?'mint':'amber'}>{receipt.status}</Badge>
+              </div>
+              <div className="mt-4 space-y-1">
+                <p><span className="text-slate">Patient:</span> {receipt.patientName}</p>
+                <p><span className="text-slate">Invoice:</span> {receipt.id} • {new Date(receipt.date).toLocaleDateString()}</p>
+                <p><span className="text-slate">Type:</span> {receipt.type}</p>
+              </div>
+              <div className="mt-4 border-t border-line pt-3 space-y-1">
+                <div className="flex justify-between"><span>Amount</span><span>{formatCurrency(receipt.amount)}</span></div>
+                <div className="flex justify-between text-rose"><span>Discount</span><span>-{formatCurrency(receipt.discount)}</span></div>
+                <div className="flex justify-between"><span>Tax ({receipt.tax}%)</span><span>{formatCurrency(receipt.amount * receipt.tax / 100)}</span></div>
+                <div className="flex justify-between font-semibold pt-2 border-t border-line"><span>Total</span><span>{formatCurrency(receipt.total)}</span></div>
+              </div>
+              <p className="text-[11px] text-slate mt-3">Payment Receipt • Generated {new Date().toLocaleString()}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" className="text-xs" onClick={()=>exportToPDF(`Invoice_${receipt.id}`, [{ Patient: receipt.patientName, Invoice: receipt.id, Type: receipt.type, Total: receipt.total }], `Receipt_${receipt.id}.pdf`)}>Export PDF</Button>
+              <Button variant="outline" className="text-xs" onClick={()=>exportToCSV([{ Invoice: receipt.id, Patient: receipt.patientName, Total: receipt.total }], `Receipt_${receipt.id}.csv`)}>Export CSV</Button>
+              <Button variant="outline" className="text-xs" onClick={()=>exportToExcel([{ Invoice: receipt.id, Patient: receipt.patientName, Total: receipt.total }], `Receipt_${receipt.id}.xls`)}>Export Excel</Button>
+              {receipt.status!=='Paid' ? <Button className="text-xs" onClick={()=>{ markPaid(receipt.id); setReceipt({ ...receipt, status: 'Paid' })}}>Mark Paid</Button> : <span className="text-xs text-mint flex items-center">✓ Paid</span>}
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )
