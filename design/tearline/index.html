@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<!--
+  Tearline — single-file component reference (Tailwind CDN + vanilla JS, no build step)
+
+  Tokens            → tailwind.config below: colors, fonts, radius, shadow, motion
+  Reusable classes  → .btn-primary .btn-secondary .btn-outline .btn-ghost .btn-icon · .field · .panel · .menu-item · .card
+  JS helpers        → openPanel(id) / closePanel(id) / togglePanel(id) — any overlay · pushToast(msg, variant) — notifications
+  Groups (anchor → contents)
+    #foundations → color · typography · shape & elevation · motion
+    #layout      → card · aspect ratio · separator · accordion · collapsible · item · empty state · resizable · scroll area
+    #navigation  → navigation menu · menubar · dropdown menu · context menu · command · sidebar · direction · breadcrumb · tabs · pagination
+    #forms       → button · button group · input · input group · input otp · textarea · checkbox · radio group · switch · toggle · toggle group · select · native select · combobox · slider · calendar · date picker
+    #overlays    → dialog · alert dialog · sheet · drawer · popover · hover card · tooltip
+    #feedback    → alert · badge · kbd · spinner · skeleton · progress · toast · sonner
+    #data        → avatar · table · data table · chart · carousel
+    #chat        → attachment · marker · bubble · message · message scroller
+    #footer      → footer
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle"></title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          paper: '#F6F5F1', surface: '#FFFFFF', ink: '#1B1D22', slate: '#666B75', line: '#E4E2DC',
+          cobalt: { DEFAULT: '#2A4CDB', dark: '#1E39B0', light: '#6C86FF' },
+          amber: { DEFAULT: '#E8A33D', light: '#F0B65C' },
+          mint: { DEFAULT: '#1F9D66', light: '#3DBE86' },
+          rose: { DEFAULT: '#D64545', light: '#F16565' },
+          inkdark: '#14161A', surfacedark: '#1D2027', linedark: '#2C2F37', slatedark: '#9A9EA8', paperdark: '#F1F0EC'
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          sans: ['"Inter"', 'sans-serif'],
+          mono: ['"IBM Plex Mono"', 'monospace']
+        },
+        borderRadius: { xs: '4px', sm: '6px', md: '10px', lg: '16px', xl: '24px', '2xl': '32px' },
+        boxShadow: {
+          xs: '0 1px 2px rgba(27,29,34,0.05)', sm: '0 2px 10px rgba(27,29,34,0.06)',
+          md: '0 10px 30px rgba(27,29,34,0.08)', lg: '0 20px 50px rgba(27,29,34,0.14)',
+          glow: '0 0 0 4px rgba(42,76,219,0.15)'
+        },
+        keyframes: {
+          fadeUp: { '0%': { opacity: 0, transform: 'translateY(16px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          shimmer: { '0%': { backgroundPosition: '-400px 0' }, '100%': { backgroundPosition: '400px 0' } },
+          floatSlow: { '0%,100%': { transform: 'translateY(0) rotate(-2deg)' }, '50%': { transform: 'translateY(-8px) rotate(-1deg)' } },
+          stripes: { '0%': { backgroundPosition: '0 0' }, '100%': { backgroundPosition: '28px 0' } }
+        },
+        animation: {
+          fadeUp: 'fadeUp .5s cubic-bezier(.16,1,.3,1) both',
+          shimmer: 'shimmer 1.6s infinite linear',
+          floatSlow: 'floatSlow 5s ease-in-out infinite',
+          stripes: 'stripes 1s linear infinite'
+        }
+      }
+    }
+  };
+</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- type="text/tailwindcss" lets this block use @apply / @layer at runtime (Tailwind Play CDN feature) -->
+<style type="text/tailwindcss">
+  :root { color-scheme: light; } html.dark { color-scheme: dark; }
+  body { -webkit-font-smoothing: antialiased; }
+  ::selection { background: #2A4CDB; color: #fff; }
+  :focus-visible { outline: 2px solid #2A4CDB; outline-offset: 3px; border-radius: 4px; }
+
+  ::-webkit-scrollbar { width: 11px; height: 11px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background-color: #D8D6CE; border-radius: 999px; border: 3px solid #F6F5F1; }
+  ::-webkit-scrollbar-thumb:hover { background-color: #B9B6AB; }
+  html.dark ::-webkit-scrollbar-thumb { background-color: #33363E; border-color: #14161A; }
+  * { scrollbar-width: thin; scrollbar-color: #D8D6CE transparent; }
+  html.dark * { scrollbar-color: #33363E transparent; }
+  .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+
+  .perf { position: relative; height: 1px; }
+  .perf::before { content:''; position:absolute; inset:0; background-image: linear-gradient(to right, #D8D6CE 50%, transparent 0%); background-size: 10px 1px; background-repeat: repeat-x; background-position: center; }
+  html.dark .perf::before { background-image: linear-gradient(to right, #33363E 50%, transparent 0%); }
+  .perf-notch { position:absolute; top:50%; width:18px; height:18px; border-radius:999px; background:#F6F5F1; transform:translateY(-50%); }
+  html.dark .perf-notch { background:#14161A; }
+  .perf-notch.left{left:-9px} .perf-notch.right{right:-9px}
+
+  .ticket-tag { display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; padding:4px 10px; border:1px dashed #C7C4B9; border-radius:4px; color:#666B75; }
+  html.dark .ticket-tag { border-color:#3A3D46; color:#9A9EA8; }
+  .mini-tag { font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; color:#666B75; }
+  html.dark .mini-tag { color:#9A9EA8; }
+
+  .skeleton { background: linear-gradient(90deg,#E9E7E0 25%,#F5F4EF 37%,#E9E7E0 63%); background-size:400px 100%; }
+  html.dark .skeleton { background: linear-gradient(90deg,#24272E 25%,#2C2F37 37%,#24272E 63%); background-size:400px 100%; }
+
+  .reveal { opacity:0; transform:translateY(16px); transition:opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1); }
+  .reveal.in { opacity:1; transform:translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .reveal{opacity:1;transform:none;transition:none} *{animation-duration:.001ms !important; animation-iteration-count:1 !important;} }
+
+  .switch { width:42px; height:24px; border-radius:999px; position:relative; transition:background-color .2s ease; cursor:pointer; }
+  .switch .dot { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:999px; background:#fff; transition:transform .2s cubic-bezier(.16,1,.3,1); box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .switch.on{background:#2A4CDB} .switch.off{background:#DEDBD2} html.dark .switch.off{background:#33363E}
+  .switch.on .dot{transform:translateX(18px)}
+
+  .cbx,.rdx{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1.5px solid #C7C4B9;background:#fff;cursor:pointer;display:inline-grid;place-content:center;transition:all .15s ease;flex-shrink:0;}
+  .cbx{border-radius:5px} .rdx{border-radius:999px}
+  html.dark .cbx, html.dark .rdx { border-color:#3A3D46; background:#1D2027; }
+  .cbx::before{content:'';width:10px;height:10px;clip-path:polygon(14% 44%,0 65%,50% 100%,100% 16%,80% 0%,43% 62%);transform:scale(0);transition:transform .15s ease;background:#fff;}
+  .cbx:checked{background:#2A4CDB;border-color:#2A4CDB} .cbx:checked::before{transform:scale(1)}
+  .rdx::before{content:'';width:8px;height:8px;border-radius:999px;transform:scale(0);transition:transform .15s ease;background:#fff;}
+  .rdx:checked{background:#2A4CDB;border-color:#2A4CDB} .rdx:checked::before{transform:scale(1)}
+
+  .glass{background:rgba(255,255,255,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.6)}
+  html.dark .glass{background:rgba(29,32,39,.5);border:1px solid rgba(255,255,255,.08)}
+
+  .tooltip{visibility:hidden;opacity:0;transition:opacity .15s ease, transform .15s ease;transform:translateY(4px)}
+  .tooltip-wrap:hover .tooltip,.tooltip-wrap:focus-within .tooltip{visibility:visible;opacity:1;transform:translateY(0)}
+  .hovercard{visibility:hidden;opacity:0;transition:opacity .18s ease, transform .18s ease;transform:translateY(6px) scale(.98)}
+  .hovercard-wrap:hover .hovercard{visibility:visible;opacity:1;transform:translateY(0) scale(1)}
+
+  .kbd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;padding:2px 6px;font-family:'IBM Plex Mono',monospace;font-size:11px;border-radius:5px;background:#EDEBE4;border-bottom:2px solid #D8D6CE;color:#4B4E56}
+  html.dark .kbd{background:#262932;border-bottom:2px solid #383B44;color:#C7C9D1}
+
+  .acc-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s cubic-bezier(.16,1,.3,1)}
+  .acc-body>div{overflow:hidden}
+  .acc-item.open .acc-body{grid-template-rows:1fr}
+  .acc-item.open .acc-chev{transform:rotate(180deg)}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:999px;background:#E4E2DC;outline:none}
+  html.dark input[type=range]{background:#2C2F37}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:999px;background:#2A4CDB;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer;margin-top:-6px}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:999px;background:#2A4CDB;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
+
+  .stripes{background-image:repeating-linear-gradient(45deg, rgba(255,255,255,.25) 0 6px, transparent 6px 12px)}
+  .sidelink.active{font-weight:600}
+
+  /* reusable component classes — utilities in markup always override these (Tailwind layer order) */
+  @layer components {
+    .btn-primary { @apply px-5 py-2.5 rounded-full bg-cobalt text-white text-sm font-medium shadow-sm hover:bg-cobalt-dark hover:shadow-md active:scale-[.96] transition-all; }
+    .btn-secondary { @apply px-5 py-2.5 rounded-full bg-ink dark:bg-paperdark text-paper dark:text-inkdark text-sm font-medium hover:opacity-90 active:scale-[.96] transition-all; }
+    .btn-outline { @apply px-5 py-2.5 rounded-full border border-line dark:border-linedark text-sm font-medium hover:border-ink dark:hover:border-paperdark active:scale-[.96] transition-all; }
+    .btn-ghost { @apply px-5 py-2.5 rounded-full text-sm font-medium text-slate dark:text-slatedark hover:bg-ink/5 dark:hover:bg-white/5 active:scale-[.96] transition-all; }
+    .btn-icon { @apply w-9 h-9 rounded-full border border-line dark:border-linedark grid place-content-center hover:border-ink dark:hover:border-paperdark transition-colors; }
+    .field { @apply w-full px-4 py-2.5 rounded-lg bg-surface dark:bg-surfacedark border border-line dark:border-linedark text-sm placeholder:text-slate/60 dark:placeholder:text-slatedark/60 focus:border-cobalt focus:shadow-glow outline-none transition-all; }
+    .panel { @apply absolute top-full left-0 mt-2 p-1.5 rounded-xl bg-surface dark:bg-surfacedark shadow-lg border border-line dark:border-linedark z-40; }
+    .menu-item { @apply w-full text-left px-2.5 py-1.5 rounded-md hover:bg-ink/5 dark:hover:bg-white/5 text-sm flex items-center gap-2; }
+    .card { @apply p-6 rounded-xl bg-surface dark:bg-surfacedark shadow-sm; }
+  }
+</style>
+</head>
+
+<body class="bg-paper dark:bg-inkdark text-ink dark:text-paperdark font-sans transition-colors duration-300">
+
+<!-- ============ TOP BAR ============ -->
+<header class="sticky top-0 z-50 bg-paper/85 dark:bg-inkdark/85 backdrop-blur-md border-b border-line dark:border-linedark">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <button onclick="openPanel('mobileNavSheet')" class="btn-icon lg:hidden"><i data-lucide="menu" class="w-4 h-4"></i></button>
+      <a href="#top" class="flex items-center gap-2 shrink-0">
+        <span class="w-8 h-8 rounded-md bg-ink dark:bg-paperdark text-paper dark:text-inkdark grid place-content-center font-display font-semibold text-sm rotate-[-4deg]" id="logoLetter"></span>
+        <span class="font-display font-semibold tracking-tight hidden sm:block" id="logoName"></span>
+      </a>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button onclick="openPanel('cmdOverlay'); setTimeout(()=>document.getElementById('cmdInput').focus(),50)" class="hidden sm:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-full border border-line dark:border-linedark text-xs text-slate dark:text-slatedark hover:border-ink dark:hover:border-paperdark transition-colors">
+        <i data-lucide="search" class="w-3.5 h-3.5"></i> Search components <span class="kbd">⌘K</span>
+      </button>
+      <button onclick="openPanel('cmdOverlay')" class="btn-icon sm:hidden"><i data-lucide="search" class="w-4 h-4"></i></button>
+      <button id="themeToggle" aria-label="Toggle dark mode" class="btn-icon">
+        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i><i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="relative overflow-hidden">
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 pt-14 pb-14 sm:pt-16 sm:pb-16 md:pt-20 md:pb-20 grid md:grid-cols-[1.3fr_1fr] gap-10 md:gap-14 items-center">
+    <div class="reveal">
+      <span class="ticket-tag"><i data-lucide="ticket" class="w-3 h-3"></i> 61 SPECIMENS · LIGHT + DARK</span>
+      <h1 class="font-display font-semibold text-[13vw] leading-[0.95] sm:text-5xl md:text-6xl mt-6 tracking-tight">Every <span class="text-cobalt dark:text-cobalt-light">primitive.</span></h1>
+      <p class="mt-6 text-slate dark:text-slatedark max-w-md text-base md:text-lg leading-relaxed">A full component library in one file — tokens, forms, overlays, data, and chat UI — ready to hand to any agent or developer. Press <span class="kbd">⌘</span><span class="kbd">K</span> to jump around.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="#foundations" class="btn-secondary py-3">Browse the library</a>
+        <span class="font-mono text-xs text-slate dark:text-slatedark">9 groups · vanilla JS, no deps</span>
+      </div>
+    </div>
+    <div class="relative h-56 sm:h-64 md:h-80 hidden sm:block">
+      <div class="absolute inset-x-8 top-4 h-40 rounded-xl bg-amber/90 shadow-md rotate-[8deg] animate-floatSlow" style="animation-delay:.2s"></div>
+      <div class="absolute inset-x-6 top-8 h-40 rounded-xl bg-surface dark:bg-surfacedark border border-line dark:border-linedark shadow-lg rotate-[-6deg] animate-floatSlow"></div>
+      <div class="absolute inset-x-10 top-16 h-40 w-[calc(100%-3rem)] rounded-xl bg-ink dark:bg-paperdark shadow-lg rotate-[2deg] p-5 flex flex-col justify-between animate-floatSlow" style="animation-delay:.4s">
+        <div class="flex justify-between items-start"><span class="font-mono text-[10px] text-paper/60 dark:text-inkdark/60 tracking-widest">SKU · 004291</span><i data-lucide="qr-code" class="w-4 h-4 text-paper/70 dark:text-inkdark/70"></i></div>
+        <p class="font-display text-paper dark:text-inkdark text-lg font-semibold">Cobalt / Amber<br>Ink / Paper</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- how this file is organized -->
+  <div class="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 pb-14 reveal">
+    <div class="rounded-xl border border-dashed border-line dark:border-linedark p-5 grid sm:grid-cols-3 gap-5 text-sm">
+      <div><p class="mini-tag mb-1.5">REUSE A PATTERN</p><p class="text-slate dark:text-slatedark">Named classes like <code class="font-mono text-xs">.btn-primary</code>, <code class="font-mono text-xs">.field</code>, <code class="font-mono text-xs">.panel</code> hold the repeated styling — apply the class instead of rebuilding the utility list.</p></div>
+      <div><p class="mini-tag mb-1.5">WIRE UP AN OVERLAY</p><p class="text-slate dark:text-slatedark"><code class="font-mono text-xs">openPanel(id)</code>, <code class="font-mono text-xs">closePanel(id)</code>, <code class="font-mono text-xs">togglePanel(id)</code> handle every dialog, sheet, dropdown, and popover.</p></div>
+      <div><p class="mini-tag mb-1.5">FIND A COMPONENT</p><p class="text-slate dark:text-slatedark">Every group below is a named anchor (<code class="font-mono text-xs">#forms</code>, <code class="font-mono text-xs">#overlays</code> …) — see the index comment at the top of the file.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="perf max-w-[1400px] mx-auto relative px-4 sm:px-6 md:px-8"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+<!-- ============ SHELL: SIDEBAR + MAIN ============ -->
+<div class="max-w-[1400px] mx-auto flex">
+  <aside class="hidden lg:block sticky top-16 h-[calc(100vh-4rem)] w-56 shrink-0 overflow-y-auto px-6 py-10">
+    <nav class="space-y-7 text-sm">
+      <div><p class="mini-tag mb-2">GROUPS</p>
+        <a href="#foundations" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Foundations</a>
+        <a href="#layout" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Layout</a>
+        <a href="#navigation" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Navigation</a>
+        <a href="#forms" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Forms</a>
+        <a href="#overlays" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Overlays</a>
+        <a href="#feedback" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Feedback</a>
+        <a href="#data" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Data display</a>
+        <a href="#chat" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Chat UI</a>
+        <a href="#footer" class="sidelink block py-1.5 text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark transition-colors">Footer</a>
+      </div>
+      <div><p class="mini-tag mb-2">CLASSES</p><p class="text-xs text-slate dark:text-slatedark leading-relaxed font-mono">.btn-* · .field<br>.panel · .menu-item<br>.card</p></div>
+    </nav>
+  </aside>
+
+  <main class="flex-1 min-w-0 px-4 sm:px-6 md:px-8">
+
+  <!-- ============ FOUNDATIONS ============ -->
+  <!-- Group: color tokens, type scale, radius/shadow scale, motion primitives -->
+  <section id="foundations" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 01</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Foundations</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Color, type, shape, and motion — the tokens everything else is built from.</p>
+
+    <p class="mini-tag mb-3">COLOR</p>
+    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4 mb-4">
+      <button data-copy="#F6F5F1" class="text-left"><div class="h-20 rounded-lg bg-paper border border-line dark:border-linedark shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Paper</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#F6F5F1</p></button>
+      <button data-copy="#1B1D22" class="text-left"><div class="h-20 rounded-lg bg-ink shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Ink</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#1B1D22</p></button>
+      <button data-copy="#666B75" class="text-left"><div class="h-20 rounded-lg bg-slate shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Slate</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#666B75</p></button>
+      <button data-copy="#2A4CDB" class="text-left"><div class="h-20 rounded-lg bg-cobalt shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Cobalt</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#2A4CDB</p></button>
+      <button data-copy="#E8A33D" class="text-left"><div class="h-20 rounded-lg bg-amber shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Amber</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#E8A33D</p></button>
+      <button data-copy="#D64545" class="text-left"><div class="h-20 rounded-lg bg-rose shadow-xs hover:shadow-md transition-shadow"></div><p class="mt-2 text-xs font-medium">Rose</p><p class="font-mono text-[10px] text-slate dark:text-slatedark">#D64545</p></button>
+    </div>
+
+    <p class="mini-tag mb-3 mt-10">TYPOGRAPHY</p>
+    <div class="divide-y divide-line dark:divide-linedark border-y border-line dark:border-linedark">
+      <div class="py-5 flex flex-col md:flex-row md:items-end justify-between gap-2"><p class="font-display font-semibold text-4xl sm:text-5xl tracking-tight">Aa Bb</p><span class="font-mono text-xs text-slate dark:text-slatedark">Display / Space Grotesk 600</span></div>
+      <div class="py-5 flex flex-col md:flex-row md:items-end justify-between gap-2"><p class="font-sans text-lg">Lead paragraph text for intros.</p><span class="font-mono text-xs text-slate dark:text-slatedark">Lead / Inter 400</span></div>
+      <div class="py-5 flex flex-col md:flex-row md:items-end justify-between gap-2"><p class="font-mono text-sm text-slate dark:text-slatedark">SKU-04291 · caption / metadata</p><span class="font-mono text-xs text-slate dark:text-slatedark">Mono / Plex Mono</span></div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-10 mt-10">
+      <div>
+        <p class="mini-tag mb-3">SHAPE &amp; ELEVATION</p>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="text-center"><div class="h-14 bg-ink dark:bg-paperdark rounded-sm mb-2 mx-auto w-14"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">6px</p></div>
+          <div class="text-center"><div class="h-14 bg-ink dark:bg-paperdark rounded-lg mb-2 mx-auto w-14"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">16px</p></div>
+          <div class="text-center"><div class="h-14 bg-ink dark:bg-paperdark rounded-full mb-2 mx-auto w-14"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">full</p></div>
+          <div class="text-center"><div class="h-14 rounded-lg bg-surface dark:bg-surfacedark shadow-xs mb-2"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">shadow xs</p></div>
+          <div class="text-center"><div class="h-14 rounded-lg bg-surface dark:bg-surfacedark shadow-md mb-2"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">shadow md</p></div>
+          <div class="text-center"><div class="h-14 rounded-lg bg-surface dark:bg-surfacedark shadow-lg mb-2"></div><p class="font-mono text-[10px] text-slate dark:text-slatedark">shadow lg</p></div>
+        </div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">MOTION</p>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm text-center group cursor-pointer"><div class="w-9 h-9 mx-auto rounded-lg bg-cobalt/15 text-cobalt dark:text-cobalt-light grid place-content-center transition-transform duration-300 group-hover:-translate-y-1 group-hover:rotate-6"><i data-lucide="sparkles" class="w-4 h-4"></i></div><p class="text-[11px] mt-2">Hover lift</p></div>
+          <div class="p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm text-center"><div class="w-9 h-9 mx-auto rounded-lg bg-amber/15 text-amber grid place-content-center transition-transform duration-300 hover:scale-110 active:scale-95"><i data-lucide="zap" class="w-4 h-4"></i></div><p class="text-[11px] mt-2">Press scale</p></div>
+          <div class="p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm text-center"><div class="w-9 h-9 mx-auto rounded-lg bg-mint/15 text-mint grid place-content-center animate-floatSlow"><i data-lucide="feather" class="w-4 h-4"></i></div><p class="text-[11px] mt-2">Ambient float</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ LAYOUT ============ -->
+  <!-- Group: card, aspect ratio, separator, accordion, collapsible, item, empty state, resizable, scroll area -->
+  <section id="layout" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 02</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Layout</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Cards, containers, and the structural pieces that hold content.</p>
+
+    <p class="mini-tag mb-3">CARD</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 mb-10">
+      <div class="card"><p class="mini-tag mb-2">BASIC</p><h3 class="font-display font-semibold">Basic card</h3><p class="text-sm text-slate dark:text-slatedark mt-1">Flat surface, soft shadow.</p></div>
+      <div class="card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"><p class="mini-tag mb-2">ELEVATE</p><h3 class="font-display font-semibold">Hover lift</h3><p class="text-sm text-slate dark:text-slatedark mt-1">Try hovering this one.</p></div>
+      <div class="p-6 rounded-xl border border-line dark:border-linedark"><p class="mini-tag mb-2">BORDERED</p><h3 class="font-display font-semibold">Outlined</h3><p class="text-sm text-slate dark:text-slatedark mt-1">Border instead of shadow.</p></div>
+      <div class="p-6 rounded-xl glass shadow-sm relative overflow-hidden"><div class="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-cobalt/30 blur-2xl"></div><p class="mini-tag mb-2">GLASS</p><h3 class="font-display font-semibold">Frosted</h3><p class="text-sm text-slate dark:text-slatedark mt-1">Backdrop blur.</p></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">ASPECT RATIO</p>
+        <div class="aspect-video rounded-xl bg-gradient-to-br from-cobalt to-amber flex items-center justify-center text-white font-mono text-xs">16 / 9</div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">SEPARATOR</p>
+        <p class="text-sm">Section one</p><div class="h-px bg-line dark:bg-linedark my-3"></div><p class="text-sm">Section two</p>
+        <div class="flex items-center gap-3 mt-3 text-sm"><span>Left</span><div class="w-px h-4 bg-line dark:bg-linedark"></div><span>Right</span></div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">ACCORDION</p>
+        <div class="rounded-xl border border-line dark:border-linedark divide-y divide-line dark:divide-linedark overflow-hidden">
+          <div class="acc-item open">
+            <button onclick="toggleAcc(this)" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium"><span>What's included?</span><i data-lucide="chevron-down" class="acc-chev w-4 h-4 transition-transform"></i></button>
+            <div class="acc-body"><div><p class="px-4 pb-3 text-sm text-slate dark:text-slatedark">Every token and component shown on this page, in one HTML file.</p></div></div>
+          </div>
+          <div class="acc-item">
+            <button onclick="toggleAcc(this)" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium"><span>Any framework required?</span><i data-lucide="chevron-down" class="acc-chev w-4 h-4 transition-transform"></i></button>
+            <div class="acc-body"><div><p class="px-4 pb-3 text-sm text-slate dark:text-slatedark">No — just Tailwind's CDN build and vanilla JS.</p></div></div>
+          </div>
+          <div class="acc-item">
+            <button onclick="toggleAcc(this)" class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium"><span>Dark mode?</span><i data-lucide="chevron-down" class="acc-chev w-4 h-4 transition-transform"></i></button>
+            <div class="acc-body"><div><p class="px-4 pb-3 text-sm text-slate dark:text-slatedark">Toggle it from the top-right corner of the page.</p></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">COLLAPSIBLE</p>
+        <div class="acc-item card">
+          <button onclick="toggleAcc(this.closest('.acc-item'))" class="flex items-center gap-2 text-sm font-medium"><i data-lucide="chevron-right" class="acc-chev w-4 h-4 transition-transform"></i> Show changelog</button>
+          <div class="acc-body"><div><p class="pt-3 text-sm text-slate dark:text-slatedark">v1.2 — added chat UI kit and data table sorting.<br>v1.1 — dark mode tokens.<br>v1.0 — initial release.</p></div></div>
+        </div>
+
+        <p class="mini-tag mb-3 mt-6">EMPTY STATE</p>
+        <div class="p-8 rounded-xl border border-dashed border-line dark:border-linedark text-center">
+          <div class="w-10 h-10 rounded-full bg-ink/5 dark:bg-white/5 grid place-content-center mx-auto mb-3"><i data-lucide="inbox" class="w-4 h-4 text-slate dark:text-slatedark"></i></div>
+          <p class="text-sm font-medium">No products yet</p>
+          <p class="text-xs text-slate dark:text-slatedark mt-1 mb-4">Add your first item to start tracking inventory.</p>
+          <button class="btn-secondary px-4 py-1.5 text-xs">Add product</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+      <div>
+        <p class="mini-tag mb-3">ITEM</p>
+        <div class="rounded-xl border border-line dark:border-linedark divide-y divide-line dark:divide-linedark">
+          <div class="flex items-center gap-3 px-4 py-3"><i data-lucide="package" class="w-4 h-4 text-slate dark:text-slatedark shrink-0"></i><div class="flex-1 min-w-0"><p class="text-sm font-medium">Inventory sync</p><p class="text-xs text-slate dark:text-slatedark">Last run 4 minutes ago</p></div><span class="px-2 py-0.5 rounded-full bg-mint/15 text-mint text-[10px] font-medium shrink-0">Active</span></div>
+          <div class="flex items-center gap-3 px-4 py-3"><i data-lucide="credit-card" class="w-4 h-4 text-slate dark:text-slatedark shrink-0"></i><div class="flex-1 min-w-0"><p class="text-sm font-medium">Payment gateway</p><p class="text-xs text-slate dark:text-slatedark">Stripe · connected</p></div><i data-lucide="chevron-right" class="w-4 h-4 text-slate dark:text-slatedark shrink-0"></i></div>
+        </div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">RESIZABLE</p>
+        <div id="resizeWrap" class="flex h-28 rounded-xl border border-line dark:border-linedark overflow-hidden select-none">
+          <div id="resizeLeft" style="width:40%" class="bg-surface dark:bg-surfacedark p-3 text-xs text-slate dark:text-slatedark">Panel A</div>
+          <div id="resizeHandle" class="w-1.5 bg-line dark:bg-linedark hover:bg-cobalt cursor-col-resize"></div>
+          <div class="flex-1 bg-ink/5 dark:bg-white/5 p-3 text-xs text-slate dark:text-slatedark">Panel B</div>
+        </div>
+
+        <p class="mini-tag mb-3 mt-6">SCROLL AREA</p>
+        <div class="h-28 overflow-y-auto rounded-xl border border-line dark:border-linedark p-3 space-y-2 text-sm">
+          <p>Row one — scroll me</p><p>Row two</p><p>Row three</p><p>Row four</p><p>Row five</p><p>Row six</p><p>Row seven</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ NAVIGATION ============ -->
+  <!-- Group: navigation menu, menubar, dropdown menu, context menu, command, sidebar, direction, breadcrumb, tabs, pagination -->
+  <section id="navigation" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 03</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Navigation</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Wayfinding — menus, menus that open menus, and command search.</p>
+
+    <p class="mini-tag mb-3">NAVIGATION MENU</p>
+    <div class="flex items-center gap-1 px-4 py-2 rounded-xl bg-surface dark:bg-surfacedark shadow-sm mb-10 relative auto-close-root overflow-x-auto no-scrollbar">
+      <span class="font-display font-semibold text-sm mr-4 shrink-0">Storefront</span>
+      <button onclick="togglePanel('navMegaPanel')" class="px-3 py-1.5 rounded-full text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center gap-1 shrink-0">Products <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+      <a href="#" class="px-3 py-1.5 rounded-full text-sm hover:bg-ink/5 dark:hover:bg-white/5 shrink-0">Pricing</a>
+      <a href="#" class="px-3 py-1.5 rounded-full text-sm hover:bg-ink/5 dark:hover:bg-white/5 shrink-0">Docs</a>
+      <div id="navMegaPanel" class="auto-close hidden panel w-80 p-4 grid grid-cols-2 gap-3">
+        <a href="#" class="p-2 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5"><p class="text-sm font-medium flex items-center gap-1.5"><i data-lucide="package" class="w-3.5 h-3.5"></i> Inventory</p><p class="text-xs text-slate dark:text-slatedark mt-0.5">Track stock in real time</p></a>
+        <a href="#" class="p-2 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5"><p class="text-sm font-medium flex items-center gap-1.5"><i data-lucide="credit-card" class="w-3.5 h-3.5"></i> POS</p><p class="text-xs text-slate dark:text-slatedark mt-0.5">Checkout, in person</p></a>
+        <a href="#" class="p-2 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5"><p class="text-sm font-medium flex items-center gap-1.5"><i data-lucide="globe" class="w-3.5 h-3.5"></i> Storefront</p><p class="text-xs text-slate dark:text-slatedark mt-0.5">Sell online</p></a>
+        <a href="#" class="p-2 rounded-lg hover:bg-ink/5 dark:hover:bg-white/5"><p class="text-sm font-medium flex items-center gap-1.5"><i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Reports</p><p class="text-xs text-slate dark:text-slatedark mt-0.5">See what's selling</p></a>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">MENUBAR</p>
+        <div class="flex items-center gap-1 p-1 rounded-lg border border-line dark:border-linedark w-fit text-sm">
+          <div class="relative auto-close-root">
+            <button onclick="togglePanel('mbFile')" class="px-3 py-1.5 rounded-md hover:bg-ink/5 dark:hover:bg-white/5">File</button>
+            <div id="mbFile" class="auto-close hidden panel w-40">
+              <button class="menu-item">New</button>
+              <button class="menu-item">Import CSV</button>
+            </div>
+          </div>
+          <div class="relative auto-close-root">
+            <button onclick="togglePanel('mbEdit')" class="px-3 py-1.5 rounded-md hover:bg-ink/5 dark:hover:bg-white/5">Edit</button>
+            <div id="mbEdit" class="auto-close hidden panel w-40">
+              <button class="menu-item">Undo</button>
+              <button class="menu-item">Redo</button>
+            </div>
+          </div>
+          <button class="px-3 py-1.5 rounded-md hover:bg-ink/5 dark:hover:bg-white/5">View</button>
+        </div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">DROPDOWN MENU</p>
+        <div class="relative auto-close-root w-fit">
+          <button onclick="togglePanel('ddMenu')" class="btn-outline flex items-center gap-1.5">Actions <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i></button>
+          <div id="ddMenu" class="auto-close hidden panel w-48">
+            <button class="menu-item"><i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit</button>
+            <button class="menu-item"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Duplicate</button>
+            <div class="h-px bg-line dark:bg-linedark my-1"></div>
+            <button class="menu-item hover:bg-rose/10 text-rose"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">CONTEXT MENU <span class="opacity-60">(right-click)</span></p>
+        <div oncontextmenu="showCtx(event)" class="h-28 rounded-xl border border-dashed border-line dark:border-linedark grid place-content-center text-sm text-slate dark:text-slatedark select-none">Right-click this area</div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">COMMAND</p>
+        <button onclick="openPanel('cmdOverlay'); setTimeout(()=>document.getElementById('cmdInput').focus(),50)" class="field flex items-center gap-2 text-slate dark:text-slatedark max-w-xs"><i data-lucide="search" class="w-4 h-4"></i> Search components… <span class="kbd ml-auto">⌘K</span></button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">SIDEBAR <span class="opacity-60">(collapsible)</span></p>
+        <div id="sbDemo" class="flex rounded-xl border border-line dark:border-linedark overflow-hidden w-fit transition-all">
+          <div id="sbRail" class="w-14 bg-surface dark:bg-surfacedark p-2 space-y-1 transition-all">
+            <button onclick="toggleSidebar()" class="w-10 h-10 rounded-lg grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="panel-left" class="w-4 h-4"></i></button>
+            <div class="w-10 h-10 rounded-lg bg-ink dark:bg-paperdark text-paper dark:text-inkdark grid place-content-center"><i data-lucide="layout-grid" class="w-4 h-4"></i></div>
+            <div class="w-10 h-10 rounded-lg grid place-content-center text-slate dark:text-slatedark"><i data-lucide="package" class="w-4 h-4"></i></div>
+            <div class="w-10 h-10 rounded-lg grid place-content-center text-slate dark:text-slatedark"><i data-lucide="settings" class="w-4 h-4"></i></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">DIRECTION</p>
+        <div class="flex items-center gap-3 mb-3">
+          <button onclick="document.getElementById('dirDemo').dir='ltr'" class="px-3 py-1 rounded-full border border-line dark:border-linedark text-xs">LTR</button>
+          <button onclick="document.getElementById('dirDemo').dir='rtl'" class="px-3 py-1 rounded-full border border-line dark:border-linedark text-xs">RTL</button>
+        </div>
+        <div id="dirDemo" dir="ltr" class="p-3 rounded-xl border border-line dark:border-linedark flex items-center gap-2 text-sm"><i data-lucide="arrow-right" class="w-4 h-4"></i> Next step</div>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-10">
+      <div>
+        <p class="mini-tag mb-3">BREADCRUMB</p>
+        <div class="flex items-center gap-2 text-sm text-slate dark:text-slatedark flex-wrap"><a href="#" class="hover:text-ink dark:hover:text-paperdark">Inventory</a><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i><a href="#" class="hover:text-ink dark:hover:text-paperdark">Apparel</a><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i><span class="text-ink dark:text-paperdark font-medium">Jackets</span></div>
+        <p class="mini-tag mb-3 mt-6">TABS</p>
+        <div class="inline-flex p-1 rounded-full bg-ink/5 dark:bg-white/5 text-sm"><button class="px-4 py-1.5 rounded-full bg-surface dark:bg-surfacedark shadow-sm font-medium">Daily</button><button class="px-4 py-1.5 rounded-full text-slate dark:text-slatedark">Weekly</button><button class="px-4 py-1.5 rounded-full text-slate dark:text-slatedark">Monthly</button></div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">PAGINATION</p>
+        <div class="flex items-center gap-1 text-sm"><button class="w-8 h-8 rounded-md grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-left" class="w-4 h-4"></i></button><button class="w-8 h-8 rounded-md bg-ink dark:bg-paperdark text-paper dark:text-inkdark font-medium">1</button><button class="w-8 h-8 rounded-md hover:bg-ink/5 dark:hover:bg-white/5">2</button><button class="w-8 h-8 rounded-md hover:bg-ink/5 dark:hover:bg-white/5">3</button><button class="w-8 h-8 rounded-md grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-right" class="w-4 h-4"></i></button></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ FORMS ============ -->
+  <!-- Group: button, button group, input, input group, input otp, textarea, checkbox, radio group, switch, toggle, toggle group, select, native select, combobox, slider, calendar, date picker -->
+  <section id="forms" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 04</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Forms &amp; inputs</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Every control needed to capture input, plus their states.</p>
+
+    <p class="mini-tag mb-3">BUTTON</p>
+    <div class="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
+      <button class="btn-primary">Primary</button>
+      <button class="btn-secondary">Secondary</button>
+      <button class="btn-outline">Outline</button>
+      <button class="btn-ghost">Ghost</button>
+      <button disabled class="px-5 py-2.5 rounded-full bg-ink/30 dark:bg-paperdark/20 text-paper dark:text-inkdark text-sm font-medium cursor-not-allowed">Disabled</button>
+      <button id="loadBtn" class="btn-primary inline-flex items-center gap-2"><span id="loadBtnLabel">Load data</span><i id="loadBtnSpin" data-lucide="loader-2" class="w-4 h-4 animate-spin hidden"></i></button>
+    </div>
+    <div class="mb-10">
+      <p class="mini-tag mb-2 mt-4">BUTTON GROUP</p>
+      <div class="inline-flex rounded-lg border border-line dark:border-linedark overflow-hidden text-sm">
+        <button class="px-4 py-2 hover:bg-ink/5 dark:hover:bg-white/5 border-r border-line dark:border-linedark">Day</button>
+        <button class="px-4 py-2 bg-ink dark:bg-paperdark text-paper dark:text-inkdark">Week</button>
+        <button class="px-4 py-2 hover:bg-ink/5 dark:hover:bg-white/5">Month</button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-x-12 gap-y-6 mb-10">
+      <label class="block"><span class="text-sm font-medium mb-1.5 block">Input <span class="mini-tag ml-1">LABEL</span></span><input type="text" placeholder="Jordan Lee" class="field"></label>
+      <label class="block"><span class="text-sm font-medium mb-1.5 block">Field <span class="mini-tag ml-1">with hint + error</span></span><input type="email" value="not-an-email" class="field border-rose focus:shadow-[0_0_0_4px_rgba(214,69,69,.15)]"><span class="text-xs text-rose mt-1.5 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Enter a valid email</span></label>
+      <label class="block"><span class="text-sm font-medium mb-1.5 block">Input group</span><div class="flex"><span class="px-3 py-2.5 rounded-l-lg border border-r-0 border-line dark:border-linedark bg-ink/5 dark:bg-white/5 text-sm text-slate dark:text-slatedark">$</span><input type="text" value="24.99" class="flex-1 min-w-0 px-4 py-2.5 rounded-r-lg bg-surface dark:bg-surfacedark border border-line dark:border-linedark text-sm outline-none focus:border-cobalt transition-all"></div></label>
+      <label class="block"><span class="text-sm font-medium mb-1.5 block">Textarea</span><textarea rows="1" placeholder="Add a note…" class="field resize-none"></textarea></label>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-x-12 gap-y-6 mb-10">
+      <div><p class="text-sm font-medium mb-1.5">Input OTP</p><div class="flex gap-1.5 sm:gap-2">
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+        <span class="w-1.5 sm:w-2 self-center text-slate dark:text-slatedark">—</span>
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+        <input maxlength="1" oninput="otpMove(this)" onkeydown="otpBack(event,this)" class="w-9 sm:w-10 h-11 text-center rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm focus:border-cobalt outline-none">
+      </div></div>
+      <div><p class="text-sm font-medium mb-1.5">Slider</p><input type="range" min="0" max="100" value="60" oninput="this.nextElementSibling.textContent=this.value+'%'" class="w-full"><p class="font-mono text-xs text-slate dark:text-slatedark mt-1">60%</p></div>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-8 mb-10 pt-8 border-t border-line dark:border-linedark">
+      <div><p class="text-sm font-medium mb-3">Checkbox</p><div class="space-y-2.5"><label class="flex items-center gap-2.5 text-sm cursor-pointer"><input type="checkbox" checked class="cbx"> In stock only</label><label class="flex items-center gap-2.5 text-sm cursor-pointer"><input type="checkbox" class="cbx"> On sale</label></div></div>
+      <div><p class="text-sm font-medium mb-3">Radio group</p><div class="space-y-2.5"><label class="flex items-center gap-2.5 text-sm cursor-pointer"><input type="radio" name="ship" checked class="rdx"> Standard</label><label class="flex items-center gap-2.5 text-sm cursor-pointer"><input type="radio" name="ship" class="rdx"> Express</label></div></div>
+      <div><p class="text-sm font-medium mb-3">Switch</p><div class="space-y-3"><div class="flex items-center gap-3 text-sm"><span class="switch on" onclick="this.classList.toggle('on');this.classList.toggle('off')"><span class="dot"></span></span> Notifications</div></div></div>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-8 mb-10 pt-8 border-t border-line dark:border-linedark">
+      <div><p class="text-sm font-medium mb-3">Toggle</p><button onclick="this.classList.toggle('bg-ink');this.classList.toggle('dark:bg-paperdark');this.classList.toggle('text-paper');this.classList.toggle('dark:text-inkdark')" class="w-9 h-9 rounded-lg border border-line dark:border-linedark grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="bold" class="w-4 h-4"></i></button></div>
+      <div><p class="text-sm font-medium mb-3">Toggle group</p><div class="inline-flex rounded-lg border border-line dark:border-linedark overflow-hidden">
+        <button onclick="tgSet(this)" class="tg-btn w-9 h-9 grid place-content-center bg-ink dark:bg-paperdark text-paper dark:text-inkdark border-r border-line dark:border-linedark"><i data-lucide="align-left" class="w-4 h-4"></i></button>
+        <button onclick="tgSet(this)" class="tg-btn w-9 h-9 grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5 border-r border-line dark:border-linedark"><i data-lucide="align-center" class="w-4 h-4"></i></button>
+        <button onclick="tgSet(this)" class="tg-btn w-9 h-9 grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="align-right" class="w-4 h-4"></i></button>
+      </div></div>
+      <div><p class="text-sm font-medium mb-3">Native select</p><select class="w-full px-3 py-2 rounded-lg border border-line dark:border-linedark bg-surface dark:bg-surfacedark text-sm"><option>Apparel</option><option>Electronics</option><option>Grocery</option></select></div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 pt-8 border-t border-line dark:border-linedark">
+      <div>
+        <p class="text-sm font-medium mb-3">Select <span class="mini-tag">custom</span></p>
+        <div class="relative auto-close-root">
+          <button onclick="togglePanel('selPanel')" class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-line dark:border-linedark text-sm bg-surface dark:bg-surfacedark"><span id="selLabel">Apparel</span><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+          <div id="selPanel" class="auto-close hidden panel w-full">
+            <button onclick="selPick(this,'Apparel')" class="menu-item justify-between">Apparel <i data-lucide="check" class="w-3.5 h-3.5"></i></button>
+            <button onclick="selPick(this,'Electronics')" class="menu-item justify-between">Electronics <i data-lucide="check" class="w-3.5 h-3.5 opacity-0"></i></button>
+            <button onclick="selPick(this,'Grocery')" class="menu-item justify-between">Grocery <i data-lucide="check" class="w-3.5 h-3.5 opacity-0"></i></button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="text-sm font-medium mb-3">Combobox</p>
+        <div class="relative auto-close-root">
+          <input oninput="cbxFilter(this.value)" onfocus="openPanel('cbxPanel')" placeholder="Search products…" class="field">
+          <div id="cbxPanel" class="auto-close hidden panel w-full">
+            <button class="cbx-item menu-item">Wireless Mouse</button>
+            <button class="cbx-item menu-item">Mechanical Keyboard</button>
+            <button class="cbx-item menu-item">USB-C Hub</button>
+            <button class="cbx-item menu-item">Desk Lamp</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="text-sm font-medium mb-3">Date picker</p>
+        <div class="relative auto-close-root">
+          <button onclick="togglePanel('dpPanel')" class="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg border border-line dark:border-linedark text-sm bg-surface dark:bg-surfacedark"><i data-lucide="calendar" class="w-4 h-4 text-slate dark:text-slatedark"></i><span id="dpValue">Select date</span></button>
+          <div id="dpPanel" class="auto-close hidden panel w-64 p-3">
+            <div class="flex items-center justify-between mb-2"><button onclick="dpCal.prev()" class="w-6 h-6 rounded grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button><span id="dpLabel" class="text-xs font-medium"></span><button onclick="dpCal.next()" class="w-6 h-6 rounded grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button></div>
+            <div class="grid grid-cols-7 gap-1 text-center mb-1">
+              <span class="text-[10px] text-slate dark:text-slatedark">S</span><span class="text-[10px] text-slate dark:text-slatedark">M</span><span class="text-[10px] text-slate dark:text-slatedark">T</span><span class="text-[10px] text-slate dark:text-slatedark">W</span><span class="text-[10px] text-slate dark:text-slatedark">T</span><span class="text-[10px] text-slate dark:text-slatedark">F</span><span class="text-[10px] text-slate dark:text-slatedark">S</span>
+            </div>
+            <div id="dpGrid" class="grid grid-cols-7 gap-1 place-items-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 pt-8 border-t border-line dark:border-linedark">
+      <p class="mini-tag mb-3">CALENDAR <span class="opacity-60">standalone, selectable</span></p>
+      <div class="p-4 rounded-xl border border-line dark:border-linedark w-full sm:w-64">
+        <div class="flex items-center justify-between mb-2">
+          <button onclick="calCal.prev()" class="w-6 h-6 rounded grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-left" class="w-3.5 h-3.5"></i></button>
+          <span id="calStaticLabel" class="text-sm font-medium"></span>
+          <button onclick="calCal.next()" class="w-6 h-6 rounded grid place-content-center hover:bg-ink/5 dark:hover:bg-white/5"><i data-lucide="chevron-right" class="w-3.5 h-3.5"></i></button>
+        </div>
+        <div class="grid grid-cols-7 gap-1 place-items-center text-center text-sm mb-1">
+          <span class="text-[10px] text-slate dark:text-slatedark">S</span><span class="text-[10px] text-slate dark:text-slatedark">M</span><span class="text-[10px] text-slate dark:text-slatedark">T</span><span class="text-[10px] text-slate dark:text-slatedark">W</span><span class="text-[10px] text-slate dark:text-slatedark">T</span><span class="text-[10px] text-slate dark:text-slatedark">F</span><span class="text-[10px] text-slate dark:text-slatedark">S</span>
+        </div>
+        <div id="calStaticGrid" class="grid grid-cols-7 gap-1 place-items-center"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ OVERLAYS ============ -->
+  <!-- Group: dialog, alert dialog, sheet, drawer, popover, hover card, tooltip -->
+  <section id="overlays" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 05</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Overlays</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Everything that floats above the page.</p>
+
+    <div class="flex flex-wrap items-center gap-3 sm:gap-4 mb-10">
+      <div><p class="mini-tag mb-2">DIALOG</p><button onclick="openPanel('dialogDemo')" class="btn-outline">Open dialog</button></div>
+      <div><p class="mini-tag mb-2">ALERT DIALOG</p><button onclick="openPanel('alertDialogDemo')" class="px-5 py-2.5 rounded-full border border-rose/40 text-rose text-sm font-medium hover:bg-rose/10 transition-colors">Delete item</button></div>
+      <div><p class="mini-tag mb-2">SHEET</p><button onclick="openPanel('sheetDemo')" class="btn-outline">Open sheet</button></div>
+      <div><p class="mini-tag mb-2">DRAWER</p><button onclick="openPanel('drawerDemo')" class="btn-outline">Open drawer</button></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-8 sm:gap-10">
+      <div><p class="mini-tag mb-2">POPOVER</p><div class="relative auto-close-root"><button onclick="togglePanel('popDemo')" class="btn-icon"><i data-lucide="plus" class="w-4 h-4"></i></button><div id="popDemo" class="auto-close hidden panel w-56 p-3"><p class="text-sm font-medium mb-1">Quick add</p><p class="text-xs text-slate dark:text-slatedark">Any content can live inside a popover.</p></div></div></div>
+      <div><p class="mini-tag mb-2">HOVER CARD</p><span class="hovercard-wrap relative inline-block"><button class="text-sm font-medium underline decoration-dotted underline-offset-4">@jordan.lee</button><div class="hovercard absolute bottom-full left-0 mb-2 w-56 p-3 rounded-xl bg-surface dark:bg-surfacedark shadow-lg border border-line dark:border-linedark"><div class="flex items-center gap-2 mb-1"><span class="w-7 h-7 rounded-full bg-cobalt/15 text-cobalt dark:text-cobalt-light grid place-content-center text-[10px] font-semibold">JL</span><p class="text-sm font-medium">Jordan Lee</p></div><p class="text-xs text-slate dark:text-slatedark">Store manager · joined 2024</p></div></span></div>
+      <div><p class="mini-tag mb-2">TOOLTIP</p><span class="tooltip-wrap relative inline-block"><button tabindex="0" class="btn-icon"><i data-lucide="info" class="w-4 h-4"></i></button><span class="tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 rounded-md bg-ink dark:bg-paperdark text-paper dark:text-inkdark text-xs whitespace-nowrap">Synced 2 minutes ago</span></span></div>
+    </div>
+  </section>
+
+  <!-- overlay markup -->
+  <div id="dialogDemo" class="hidden fixed inset-0 z-[60] grid place-content-center p-5"><div onclick="closePanel('dialogDemo')" class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div><div class="relative bg-surface dark:bg-surfacedark rounded-xl shadow-lg w-[min(90vw,420px)] p-6 animate-fadeUp"><div class="flex items-start justify-between mb-3"><h3 class="font-display font-semibold text-lg">Confirm restock</h3><button onclick="closePanel('dialogDemo')" class="text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark"><i data-lucide="x" class="w-4 h-4"></i></button></div><p class="text-sm text-slate dark:text-slatedark mb-6">This creates a purchase order for 120 units across 4 SKUs.</p><div class="flex justify-end gap-3"><button onclick="closePanel('dialogDemo')" class="btn-ghost px-4 py-2">Cancel</button><button onclick="closePanel('dialogDemo')" class="btn-primary px-4 py-2">Create order</button></div></div></div>
+
+  <div id="alertDialogDemo" class="hidden fixed inset-0 z-[60] grid place-content-center p-5"><div class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div><div class="relative bg-surface dark:bg-surfacedark rounded-xl shadow-lg w-[min(90vw,420px)] p-6 animate-fadeUp"><div class="w-10 h-10 rounded-full bg-rose/15 text-rose grid place-content-center mb-3"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div><h3 class="font-display font-semibold text-lg mb-1">Delete this product?</h3><p class="text-sm text-slate dark:text-slatedark mb-6">This can't be undone. It will be removed from inventory and the storefront.</p><div class="flex justify-end gap-3"><button onclick="closePanel('alertDialogDemo')" class="btn-ghost px-4 py-2">Cancel</button><button onclick="closePanel('alertDialogDemo')" class="px-4 py-2 rounded-full bg-rose text-white text-sm font-medium hover:opacity-90">Delete</button></div></div></div>
+
+  <div id="sheetDemo" class="hidden fixed inset-0 z-[60]"><div onclick="closePanel('sheetDemo')" class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div><div class="absolute inset-y-0 right-0 w-[min(90vw,380px)] bg-paper dark:bg-inkdark border-l border-line dark:border-linedark p-6 overflow-y-auto animate-fadeUp"><div class="flex items-center justify-between mb-4"><h3 class="font-display font-semibold text-lg">Edit product</h3><button onclick="closePanel('sheetDemo')"><i data-lucide="x" class="w-4 h-4"></i></button></div><p class="text-sm text-slate dark:text-slatedark mb-4">Slides in from the edge — good for forms that need more room than a popover.</p><label class="block text-sm mb-4"><span class="font-medium mb-1.5 block">Product name</span><input value="Wireless Mouse" class="field"></label><button onclick="closePanel('sheetDemo')" class="btn-primary">Save changes</button></div></div>
+
+  <div id="drawerDemo" class="hidden fixed inset-0 z-[60]"><div onclick="closePanel('drawerDemo')" class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div><div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-paper dark:bg-inkdark border-t border-line dark:border-linedark p-6 animate-fadeUp"><div class="w-10 h-1.5 rounded-full bg-line dark:bg-linedark mx-auto mb-4"></div><h3 class="font-display font-semibold text-lg mb-1">Filter products</h3><p class="text-sm text-slate dark:text-slatedark mb-4">Bottom-anchored — the mobile pattern for sheets.</p><div class="flex gap-2 flex-wrap mb-4"><span class="px-3 py-1.5 rounded-full bg-ink dark:bg-paperdark text-paper dark:text-inkdark text-xs">In stock</span><span class="px-3 py-1.5 rounded-full border border-line dark:border-linedark text-xs">On sale</span><span class="px-3 py-1.5 rounded-full border border-line dark:border-linedark text-xs">New</span></div><button onclick="closePanel('drawerDemo')" class="btn-primary w-full">Apply filters</button></div></div>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ FEEDBACK ============ -->
+  <!-- Group: alert, badge, kbd, spinner, skeleton, progress, toast, sonner -->
+  <section id="feedback" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 06</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Feedback</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Status, progress, and interruption — used sparingly.</p>
+
+    <p class="mini-tag mb-3">ALERT</p>
+    <div class="space-y-3 mb-10">
+      <div class="flex items-start gap-3 p-4 rounded-lg bg-mint/10 border border-mint/30 text-sm"><i data-lucide="check-circle" class="w-4 h-4 text-mint mt-0.5 shrink-0"></i><p><span class="font-medium">Order fulfilled.</span> <span class="text-slate dark:text-slatedark">Stock levels updated automatically.</span></p></div>
+      <div class="flex items-start gap-3 p-4 rounded-lg bg-amber/10 border border-amber/30 text-sm"><i data-lucide="alert-triangle" class="w-4 h-4 text-amber mt-0.5 shrink-0"></i><p><span class="font-medium">Low stock.</span> <span class="text-slate dark:text-slatedark">6 items below reorder threshold.</span></p></div>
+      <div id="dismissAlert" class="flex items-start gap-3 p-4 rounded-lg bg-rose/10 border border-rose/30 text-sm"><i data-lucide="alert-circle" class="w-4 h-4 text-rose mt-0.5 shrink-0"></i><p class="flex-1"><span class="font-medium">Sync failed.</span> <span class="text-slate dark:text-slatedark">Retry the last push.</span></p><button onclick="document.getElementById('dismissAlert').remove()" class="text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 mb-10">
+      <div><p class="mini-tag mb-3">BADGE</p><div class="flex flex-wrap gap-2"><span class="px-2.5 py-1 rounded-full bg-mint/15 text-mint text-xs font-medium">Active</span><span class="px-2.5 py-1 rounded-full bg-amber/15 text-amber text-xs font-medium">Pending</span><span class="px-2.5 py-1 rounded-full bg-rose/15 text-rose text-xs font-medium">Failed</span></div></div>
+      <div><p class="mini-tag mb-3">KBD</p><div class="flex items-center gap-1"><span class="kbd">⌘</span><span class="kbd">K</span></div></div>
+      <div><p class="mini-tag mb-3">SPINNER</p><div class="flex items-center gap-4"><i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span class="flex gap-1"><span class="w-1.5 h-1.5 rounded-full bg-ink dark:bg-paperdark animate-bounce" style="animation-delay:0ms"></span><span class="w-1.5 h-1.5 rounded-full bg-ink dark:bg-paperdark animate-bounce" style="animation-delay:120ms"></span><span class="w-1.5 h-1.5 rounded-full bg-ink dark:bg-paperdark animate-bounce" style="animation-delay:240ms"></span></span></div></div>
+      <div><p class="mini-tag mb-3">SKELETON</p><div class="flex items-center gap-2"><div class="skeleton w-8 h-8 rounded-full animate-shimmer"></div><div class="skeleton h-2.5 w-16 rounded animate-shimmer"></div></div></div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">PROGRESS</p>
+        <div class="h-2 rounded-full bg-line dark:bg-linedark overflow-hidden mb-2"><div id="progBar" class="h-full bg-cobalt rounded-full transition-all duration-700" style="width:35%"></div></div>
+        <div class="h-2 rounded-full bg-line dark:bg-linedark overflow-hidden mb-3"><div class="h-full w-1/3 bg-amber stripes animate-stripes"></div></div>
+        <button onclick="bumpProgress()" class="text-xs font-medium text-cobalt dark:text-cobalt-light">Advance progress</button>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">TOAST</p>
+        <button onclick="pushToast('Saved changes','success')" class="btn-outline mb-3">Trigger toast</button>
+        <p class="mini-tag mb-3 mt-4">SONNER <span class="opacity-60">stacked</span></p>
+        <button onclick="pushToast('Item '+(Math.floor(Math.random()*90)+10)+' restocked')" class="btn-outline">Fire multiple</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ DATA ============ -->
+  <!-- Group: avatar, table, data table, chart, carousel -->
+  <section id="data" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 07</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Data display</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Avatars, tables, charts, and carousels.</p>
+
+    <p class="mini-tag mb-3">AVATAR <span class="opacity-60">with status marker</span></p>
+    <div class="flex items-center gap-4 mb-10">
+      <div class="relative"><span class="w-11 h-11 rounded-full bg-cobalt/15 text-cobalt dark:text-cobalt-light grid place-content-center text-sm font-semibold">JL</span><span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-mint border-2 border-paper dark:border-inkdark"></span></div>
+      <div class="relative"><span class="w-11 h-11 rounded-full bg-amber/20 text-amber grid place-content-center text-sm font-semibold">RT</span><span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-slate border-2 border-paper dark:border-inkdark"></span></div>
+      <div class="flex -space-x-3"><span class="w-9 h-9 rounded-full bg-rose/15 text-rose grid place-content-center text-xs font-semibold border-2 border-paper dark:border-inkdark">+3</span><span class="w-9 h-9 rounded-full bg-mint/15 text-mint grid place-content-center text-xs font-semibold border-2 border-paper dark:border-inkdark">MK</span><span class="w-9 h-9 rounded-full bg-cobalt/15 text-cobalt dark:text-cobalt-light grid place-content-center text-xs font-semibold border-2 border-paper dark:border-inkdark">SL</span></div>
+    </div>
+
+    <p class="mini-tag mb-3">TABLE <span class="opacity-60">static</span></p>
+    <div class="overflow-x-auto mb-3 rounded-xl border border-line dark:border-linedark">
+      <table class="w-full text-sm"><thead><tr class="text-left text-xs text-slate dark:text-slatedark"><th class="py-2.5 px-3 font-medium">Item</th><th class="py-2.5 px-3 font-medium">SKU</th><th class="py-2.5 px-3 font-medium">Status</th></tr></thead>
+      <tbody><tr class="border-t border-line dark:border-linedark"><td class="py-2.5 px-3">Wireless Mouse</td><td class="py-2.5 px-3 font-mono text-xs text-slate dark:text-slatedark">SKU-1042</td><td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full bg-mint/15 text-mint text-[10px] font-medium">In stock</span></td></tr></tbody></table>
+    </div>
+
+    <p class="mini-tag mb-3 mt-8">DATA TABLE <span class="opacity-60">sortable — click a header</span></p>
+    <div class="overflow-x-auto mb-10 rounded-xl border border-line dark:border-linedark">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left text-xs text-slate dark:text-slatedark select-none whitespace-nowrap">
+          <th class="py-2.5 px-3 font-medium cursor-pointer hover:text-ink dark:hover:text-paperdark" onclick="sortTable('name')">Item <i data-lucide="arrow-up-down" class="w-3 h-3 inline"></i></th>
+          <th class="py-2.5 px-3 font-medium cursor-pointer hover:text-ink dark:hover:text-paperdark" onclick="sortTable('sku')">SKU <i data-lucide="arrow-up-down" class="w-3 h-3 inline"></i></th>
+          <th class="py-2.5 px-3 font-medium cursor-pointer hover:text-ink dark:hover:text-paperdark" onclick="sortTable('stock')">Stock <i data-lucide="arrow-up-down" class="w-3 h-3 inline"></i></th>
+          <th class="py-2.5 px-3 font-medium cursor-pointer hover:text-ink dark:hover:text-paperdark" onclick="sortTable('price')">Price <i data-lucide="arrow-up-down" class="w-3 h-3 inline"></i></th>
+        </tr></thead>
+        <tbody id="dtBody"></tbody>
+      </table>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">CHART <span class="opacity-60">bar</span></p>
+        <svg viewBox="0 0 240 100" class="w-full h-28">
+          <rect x="10" y="40" width="24" height="60" rx="4" class="fill-cobalt/70"/><rect x="46" y="20" width="24" height="80" rx="4" class="fill-cobalt"/><rect x="82" y="55" width="24" height="45" rx="4" class="fill-cobalt/70"/><rect x="118" y="10" width="24" height="90" rx="4" class="fill-amber"/><rect x="154" y="35" width="24" height="65" rx="4" class="fill-cobalt/70"/><rect x="190" y="48" width="24" height="52" rx="4" class="fill-cobalt/50"/>
+        </svg>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">CHART <span class="opacity-60">line</span></p>
+        <svg viewBox="0 0 240 100" class="w-full h-28">
+          <polyline points="10,80 50,60 90,65 130,30 170,40 220,15" fill="none" class="stroke-cobalt" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="220" cy="15" r="4" class="fill-cobalt"/>
+        </svg>
+      </div>
+    </div>
+
+    <p class="mini-tag mb-3">CAROUSEL</p>
+    <div class="relative">
+      <div id="carouselTrack" class="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory pb-1">
+        <div class="snap-start shrink-0 w-40 sm:w-48 p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm"><div class="h-20 rounded-lg bg-gradient-to-br from-cobalt to-amber mb-3"></div><p class="text-sm font-medium">Item 01</p></div>
+        <div class="snap-start shrink-0 w-40 sm:w-48 p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm"><div class="h-20 rounded-lg bg-gradient-to-br from-mint to-cobalt mb-3"></div><p class="text-sm font-medium">Item 02</p></div>
+        <div class="snap-start shrink-0 w-40 sm:w-48 p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm"><div class="h-20 rounded-lg bg-gradient-to-br from-rose to-amber mb-3"></div><p class="text-sm font-medium">Item 03</p></div>
+        <div class="snap-start shrink-0 w-40 sm:w-48 p-4 rounded-xl bg-surface dark:bg-surfacedark shadow-sm"><div class="h-20 rounded-lg bg-gradient-to-br from-amber to-mint mb-3"></div><p class="text-sm font-medium">Item 04</p></div>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="document.getElementById('carouselTrack').scrollBy({left:-200,behavior:'smooth'})" class="w-8 h-8 rounded-full border border-line dark:border-linedark grid place-content-center"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+        <button onclick="document.getElementById('carouselTrack').scrollBy({left:200,behavior:'smooth'})" class="w-8 h-8 rounded-full border border-line dark:border-linedark grid place-content-center"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ CHAT UI ============ -->
+  <!-- Group: attachment, marker, bubble, message, message scroller -->
+  <section id="chat" class="scroll-mt-20 py-16 reveal">
+    <span class="ticket-tag">GROUP 08</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-3 tracking-tight">Chat UI</h2>
+    <p class="text-slate dark:text-slatedark max-w-lg mb-10">Primitives for building an assistant or messaging surface.</p>
+
+    <div class="grid md:grid-cols-2 gap-10 mb-10">
+      <div>
+        <p class="mini-tag mb-3">ATTACHMENT</p>
+        <div class="flex items-center gap-2 px-3 py-2 rounded-lg border border-line dark:border-linedark w-fit"><i data-lucide="file-text" class="w-4 h-4 text-slate dark:text-slatedark shrink-0"></i><div><p class="text-xs font-medium">inventory-q3.csv</p><p class="text-[10px] text-slate dark:text-slatedark">248 KB</p></div><button class="text-slate dark:text-slatedark hover:text-rose"><i data-lucide="x" class="w-3.5 h-3.5"></i></button></div>
+      </div>
+      <div>
+        <p class="mini-tag mb-3">MARKER <span class="opacity-60">variant = separator / default / border</span></p>
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 text-xs text-slate/60"><div class="h-px flex-1 bg-line dark:bg-linedark"></div><span class="font-mono tracking-widest">APR 2, 2026</span><div class="h-px flex-1 bg-line dark:bg-linedark"></div></div>
+          <div class="flex items-center gap-2"><span class="grid w-5 h-5 shrink-0 place-content-center rounded-full bg-mint/15 text-mint"><i data-lucide="check" class="w-3 h-3"></i></span><span class="text-xs text-slate dark:text-slatedark">Order <span class="font-mono font-medium text-ink dark:text-paperdark">#4821</span> confirmed</span></div>
+          <div class="flex items-center gap-2"><span class="grid w-5 h-5 shrink-0 place-content-center rounded-full bg-rose/15 text-rose"><i data-lucide="x" class="w-3 h-3"></i></span><span class="text-xs text-slate dark:text-slatedark">Payment <span class="font-mono text-rose">declined</span> — card expired</span></div>
+          <div class="flex items-center gap-2"><span class="grid w-5 h-5 shrink-0 place-content-center rounded-full bg-amber/15 text-amber"><i data-lucide="flag" class="w-3 h-3"></i></span><div><p class="text-xs font-medium text-amber">Flagged for review</p><p class="text-xs text-slate dark:text-slatedark">Customer requested a refund</p></div></div>
+          <div class="flex items-center gap-2 border-b border-line dark:border-linedark pb-2"><span class="grid w-5 h-5 shrink-0 place-content-center rounded-full bg-cobalt/15 text-cobalt dark:text-cobalt-light"><i data-lucide="message-circle" class="w-3 h-3"></i></span><span class="text-xs text-slate dark:text-slatedark">Jordan added a <span class="font-medium text-ink dark:text-paperdark">private note</span></span></div>
+          <div class="flex items-center gap-2"><span class="grid w-5 h-5 shrink-0 place-content-center rounded-full bg-ink/10 dark:bg-white/10"><i data-lucide="bot" class="w-3 h-3 text-slate dark:text-slatedark"></i></span><span class="text-xs text-slate dark:text-slatedark">AI suggested a <span class="font-medium text-ink dark:text-paperdark">reorder of 120 units</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="mini-tag mb-3">BUBBLE &amp; MESSAGE</p>
+    <div class="flex flex-col gap-3 mb-3 max-w-md">
+      <div class="flex items-end gap-2"><span class="w-7 h-7 rounded-full bg-ink/10 dark:bg-white/10 grid place-content-center text-[10px] font-semibold shrink-0">AI</span><div><div class="px-4 py-2.5 rounded-2xl rounded-bl-sm bg-surface dark:bg-surfacedark shadow-sm text-sm">Stock on SKU-1042 dropped below threshold — want me to draft a PO?</div><p class="text-[10px] text-slate dark:text-slatedark mt-1 ml-1">9:41 AM</p></div></div>
+      <div class="flex items-end gap-2 justify-end"><div class="text-right"><div class="px-4 py-2.5 rounded-2xl rounded-br-sm bg-cobalt text-white text-sm">Yes, 120 units.</div><p class="text-[10px] text-slate dark:text-slatedark mt-1 mr-1">9:42 AM</p></div></div>
+    </div>
+
+    <p class="mini-tag mb-3 mt-8">MESSAGE SCROLLER <span class="opacity-60">mini chat widget</span></p>
+    <div class="rounded-xl border border-line dark:border-linedark overflow-hidden max-w-md">
+      <div id="chatThread" class="h-56 overflow-y-auto p-4 flex flex-col bg-paper dark:bg-inkdark">
+        <div class="flex items-end gap-2 mb-3"><span class="w-6 h-6 rounded-full bg-ink/10 dark:bg-white/10 grid place-content-center text-[9px] font-semibold shrink-0">AI</span><div class="max-w-[75%] px-3.5 py-2 rounded-2xl rounded-bl-sm bg-surface dark:bg-surfacedark shadow-sm text-sm">Hi! Ask me anything about your inventory.</div></div>
+        <div class="flex justify-end mb-3"><div class="max-w-[75%] px-3.5 py-2 rounded-2xl rounded-br-sm bg-cobalt text-white text-sm">What's low on stock?</div></div>
+        <div class="flex items-end gap-2"><span class="w-6 h-6 rounded-full bg-ink/10 dark:bg-white/10 grid place-content-center text-[9px] font-semibold shrink-0">AI</span><div class="max-w-[75%] px-3.5 py-2 rounded-2xl rounded-bl-sm bg-surface dark:bg-surfacedark shadow-sm text-sm">6 items are below their reorder point — Desk Lamp is the most urgent.</div></div>
+      </div>
+      <div class="flex items-center gap-2 p-2.5 border-t border-line dark:border-linedark bg-surface dark:bg-surfacedark">
+        <button class="text-slate dark:text-slatedark hover:text-ink dark:hover:text-paperdark"><i data-lucide="paperclip" class="w-4 h-4"></i></button>
+        <input id="chatInput" onkeydown="if(event.key==='Enter')sendDemoMessage()" placeholder="Message…" class="flex-1 bg-transparent text-sm outline-none">
+        <button onclick="sendDemoMessage()" class="w-7 h-7 rounded-full bg-cobalt text-white grid place-content-center shrink-0"><i data-lucide="arrow-up" class="w-3.5 h-3.5"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <div class="perf relative"><span class="perf-notch left"></span><span class="perf-notch right"></span></div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer id="footer" class="scroll-mt-20 pt-16 pb-10 reveal">
+    <span class="ticket-tag">GROUP 09</span>
+    <h2 class="font-display font-semibold text-3xl md:text-4xl mt-4 mb-10 tracking-tight">Footer</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-14 border-b border-line dark:border-linedark">
+      <div class="lg:col-span-2"><span class="w-8 h-8 rounded-md bg-ink dark:bg-paperdark text-paper dark:text-inkdark grid place-content-center font-display font-semibold text-sm rotate-[-4deg] mb-4" id="logoLetterFooter"></span><p class="text-sm text-slate dark:text-slatedark max-w-xs">A hand-off reference, not a template. Take the tokens, leave the specifics.</p></div>
+      <div><p class="text-sm font-medium mb-3">Product</p><ul class="space-y-2 text-sm text-slate dark:text-slatedark"><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Inventory</a></li><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Point of sale</a></li><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Storefront</a></li></ul></div>
+      <div><p class="text-sm font-medium mb-3">Company</p><ul class="space-y-2 text-sm text-slate dark:text-slatedark"><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">About</a></li><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Careers</a></li></ul></div>
+      <div><p class="text-sm font-medium mb-3">Legal</p><ul class="space-y-2 text-sm text-slate dark:text-slatedark"><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Privacy</a></li><li><a href="#" class="hover:text-ink dark:hover:text-paperdark">Terms</a></li></ul></div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
+      <p class="font-mono text-xs text-slate dark:text-slatedark">© 2026 · Reference sheet, not a product.</p>
+      <div class="flex items-center gap-3"><a href="#" class="btn-icon"><i data-lucide="github" class="w-4 h-4"></i></a><a href="#" class="btn-icon"><i data-lucide="twitter" class="w-4 h-4"></i></a><a href="#" class="btn-icon"><i data-lucide="mail" class="w-4 h-4"></i></a></div>
+    </div>
+  </footer>
+
+  </main>
+</div>
+
+<!-- ============ GLOBAL OVERLAYS ============ -->
+
+<!-- mobile nav sheet -->
+<div id="mobileNavSheet" class="hidden fixed inset-0 z-[70]">
+  <div onclick="closePanel('mobileNavSheet')" class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div>
+  <div class="absolute inset-y-0 left-0 w-72 bg-paper dark:bg-inkdark border-r border-line dark:border-linedark p-6 overflow-y-auto animate-fadeUp">
+    <div class="flex items-center justify-between mb-6"><span class="font-display font-semibold">Sections</span><button onclick="closePanel('mobileNavSheet')"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+    <nav class="space-y-1 text-sm">
+      <a href="#foundations" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Foundations</a>
+      <a href="#layout" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Layout</a>
+      <a href="#navigation" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Navigation</a>
+      <a href="#forms" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Forms</a>
+      <a href="#overlays" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Overlays</a>
+      <a href="#feedback" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Feedback</a>
+      <a href="#data" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Data display</a>
+      <a href="#chat" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Chat UI</a>
+      <a href="#footer" onclick="closePanel('mobileNavSheet')" class="block py-2 text-slate dark:text-slatedark">Footer</a>
+    </nav>
+  </div>
+</div>
+
+<!-- context menu — positioned with clientX/clientY (viewport-relative) to match position:fixed; pageX/pageY would drift once the page is scrolled, which was the original bug -->
+<div id="ctxMenu" class="hidden fixed z-[80] w-44 p-1.5 rounded-lg bg-surface dark:bg-surfacedark shadow-lg border border-line dark:border-linedark">
+  <button class="menu-item"><i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy</button>
+  <button class="menu-item"><i data-lucide="pencil" class="w-3.5 h-3.5"></i> Rename</button>
+  <div class="h-px bg-line dark:bg-linedark my-1"></div>
+  <button class="menu-item hover:bg-rose/10 text-rose"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
+</div>
+
+<!-- command palette -->
+<div id="cmdOverlay" class="hidden fixed inset-0 z-[80] grid content-start justify-center pt-24 p-5">
+  <div onclick="closePanel('cmdOverlay')" class="absolute inset-0 bg-ink/40 backdrop-blur-sm"></div>
+  <div class="relative bg-surface dark:bg-surfacedark rounded-xl shadow-lg w-[min(92vw,480px)] overflow-hidden">
+    <div class="flex items-center gap-2 px-4 border-b border-line dark:border-linedark">
+      <i data-lucide="search" class="w-4 h-4 text-slate dark:text-slatedark"></i>
+      <input id="cmdInput" oninput="filterCmd()" placeholder="Jump to a component…" class="flex-1 bg-transparent py-3 text-sm outline-none">
+      <span class="kbd">Esc</span>
+    </div>
+    <div id="cmdList" class="max-h-72 overflow-y-auto p-2">
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#foundations';closePanel('cmdOverlay')"><span>Color &amp; Typography</span><span class="mini-tag">Foundations</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#layout';closePanel('cmdOverlay')"><span>Accordion</span><span class="mini-tag">Layout</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#layout';closePanel('cmdOverlay')"><span>Resizable</span><span class="mini-tag">Layout</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#navigation';closePanel('cmdOverlay')"><span>Command</span><span class="mini-tag">Navigation</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#navigation';closePanel('cmdOverlay')"><span>Context menu</span><span class="mini-tag">Navigation</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#navigation';closePanel('cmdOverlay')"><span>Sidebar</span><span class="mini-tag">Navigation</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#forms';closePanel('cmdOverlay')"><span>Buttons</span><span class="mini-tag">Forms</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#forms';closePanel('cmdOverlay')"><span>Date picker</span><span class="mini-tag">Forms</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#forms';closePanel('cmdOverlay')"><span>Combobox</span><span class="mini-tag">Forms</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#overlays';closePanel('cmdOverlay')"><span>Dialog &amp; Sheet</span><span class="mini-tag">Overlays</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#feedback';closePanel('cmdOverlay')"><span>Toast &amp; Sonner</span><span class="mini-tag">Feedback</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#data';closePanel('cmdOverlay')"><span>Data table</span><span class="mini-tag">Data</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#data';closePanel('cmdOverlay')"><span>Carousel</span><span class="mini-tag">Data</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#chat';closePanel('cmdOverlay')"><span>Marker</span><span class="mini-tag">Chat UI</span></button>
+      <button class="cmd-item w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-ink/5 dark:hover:bg-white/5 flex items-center justify-between" onclick="location.hash='#chat';closePanel('cmdOverlay')"><span>Message scroller</span><span class="mini-tag">Chat UI</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- sonner / toast stack -->
+<div id="sonnerStack" class="fixed bottom-6 right-6 z-[90] flex flex-col-reverse gap-2 pointer-events-none w-[min(90vw,300px)]"></div>
+
+<script>
+  const DESIGN_NAME = 'Tearline';
+
+  document.getElementById('pageTitle').textContent = DESIGN_NAME + ' — Component Library';
+  document.getElementById('logoName').textContent = DESIGN_NAME;
+  const initial = DESIGN_NAME.charAt(0).toUpperCase();
+  document.getElementById('logoLetter').textContent = initial;
+  document.getElementById('logoLetterFooter').textContent = initial;
+
+  lucide.createIcons();
+
+  function openPanel(id){ document.getElementById(id).classList.remove('hidden'); }
+  function closePanel(id){ document.getElementById(id).classList.add('hidden'); }
+  function togglePanel(id){
+    const el = document.getElementById(id);
+    const willOpen = el.classList.contains('hidden');
+    document.querySelectorAll('.auto-close').forEach(p => { if (p.id !== id) p.classList.add('hidden'); });
+    el.classList.toggle('hidden', !willOpen);
+  }
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll('.auto-close').forEach(panel => {
+      if (panel.classList.contains('hidden')) return;
+      const root = panel.closest('.auto-close-root');
+      if (root && !root.contains(e.target)) panel.classList.add('hidden');
+    });
+    const ctx = document.getElementById('ctxMenu');
+    if (!ctx.classList.contains('hidden') && !ctx.contains(e.target)) ctx.classList.add('hidden');
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openPanel('cmdOverlay'); setTimeout(()=>document.getElementById('cmdInput').focus(),50); }
+    if (e.key === 'Escape') { closePanel('cmdOverlay'); document.getElementById('ctxMenu').classList.add('hidden'); }
+  });
+
+  // theme
+  document.getElementById('themeToggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+
+  // copy swatch
+  document.querySelectorAll('[data-copy]').forEach(btn => btn.addEventListener('click', () => {
+    const hex = btn.getAttribute('data-copy');
+    navigator.clipboard?.writeText(hex).catch(()=>{});
+    pushToast('Copied ' + hex);
+  }));
+
+  // loading button
+  document.getElementById('loadBtn').addEventListener('click', function () {
+    const label = document.getElementById('loadBtnLabel'), spin = document.getElementById('loadBtnSpin');
+    label.textContent = 'Loading…'; spin.classList.remove('hidden'); this.disabled = true;
+    setTimeout(() => { label.textContent = 'Load data'; spin.classList.add('hidden'); this.disabled = false; }, 1400);
+  });
+
+  // accordion / collapsible — single-open within a divided group, independent when standalone
+  function toggleAcc(item){
+    const group = item.parentElement;
+    if (group && group.classList.contains('divide-y')) {
+      group.querySelectorAll('.acc-item').forEach(i => { if (i !== item) i.classList.remove('open'); });
+    }
+    item.classList.toggle('open');
+  }
+
+  // toggle group — single-select among siblings
+  function tgSet(btn){
+    btn.parentElement.querySelectorAll('.tg-btn').forEach(b => { b.classList.remove('bg-ink','dark:bg-paperdark','text-paper','dark:text-inkdark'); b.classList.add('hover:bg-ink/5','dark:hover:bg-white/5'); });
+    btn.classList.add('bg-ink','dark:bg-paperdark','text-paper','dark:text-inkdark');
+  }
+
+  // select (custom)
+  function selPick(btn, label){
+    document.getElementById('selLabel').textContent = label;
+    btn.parentElement.querySelectorAll('button i[data-lucide="check"]').forEach(i => i.classList.add('opacity-0'));
+    btn.querySelector('i[data-lucide="check"]').classList.remove('opacity-0');
+    closePanel('selPanel');
+  }
+
+  // combobox filter
+  function cbxFilter(q){
+    q = q.toLowerCase();
+    document.querySelectorAll('.cbx-item').forEach(i => i.style.display = i.textContent.toLowerCase().includes(q) ? 'flex' : 'none');
+  }
+
+  // OTP — auto-advance forward, backspace steps back
+  function otpMove(el){ if (el.value.length === 1 && el.nextElementSibling && el.nextElementSibling.tagName === 'INPUT') el.nextElementSibling.focus(); }
+  function otpBack(e, el){ if (e.key === 'Backspace' && !el.value && el.previousElementSibling && el.previousElementSibling.tagName === 'INPUT') el.previousElementSibling.focus(); }
+
+  // sidebar collapse
+  let sbOpen = false;
+  function toggleSidebar(){ sbOpen = !sbOpen; document.getElementById('sbRail').style.width = sbOpen ? '160px' : '56px'; }
+
+  // resizable
+  (function(){
+    let dragging = false;
+    const handle = document.getElementById('resizeHandle');
+    handle.addEventListener('mousedown', () => { dragging = true; document.body.style.userSelect = 'none'; });
+    document.addEventListener('mouseup', () => { dragging = false; document.body.style.userSelect = ''; });
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      const wrap = document.getElementById('resizeWrap');
+      const rect = wrap.getBoundingClientRect();
+      let pct = ((e.clientX - rect.left) / rect.width) * 100;
+      pct = Math.min(80, Math.max(20, pct));
+      document.getElementById('resizeLeft').style.width = pct + '%';
+    });
+  })();
+
+  // context menu — FIX: use clientX/clientY (viewport-relative) since #ctxMenu is position:fixed.
+  // The previous version used e.pageX/pageY (document-relative), which is only correct for
+  // absolutely-positioned elements — once the page was scrolled, the menu rendered off-screen
+  // below the viewport and looked like it "didn't work". Also clamps to stay on-screen.
+  function showCtx(e){
+    e.preventDefault();
+    const m = document.getElementById('ctxMenu');
+    m.classList.remove('hidden');
+    const menuW = m.offsetWidth, menuH = m.offsetHeight;
+    let x = e.clientX, y = e.clientY;
+    if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 8;
+    if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 8;
+    m.style.left = Math.max(8, x) + 'px';
+    m.style.top = Math.max(8, y) + 'px';
+  }
+  window.addEventListener('scroll', () => document.getElementById('ctxMenu').classList.add('hidden'), true);
+  window.addEventListener('resize', () => document.getElementById('ctxMenu').classList.add('hidden'));
+
+  // command palette filter
+  function filterCmd(){
+    const q = document.getElementById('cmdInput').value.toLowerCase();
+    document.querySelectorAll('.cmd-item').forEach(item => item.style.display = item.textContent.toLowerCase().includes(q) ? 'flex' : 'none');
+  }
+
+  // calendar — generalized mount so both the Date Picker popover and the standalone Calendar
+  // share one implementation instead of duplicating render logic.
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function mountCalendar(prefix, initial, onSelect){
+    const state = { ...initial };
+    const grid = document.getElementById(prefix + 'Grid');
+    const label = document.getElementById(prefix + 'Label');
+    function render(){
+      const firstDay = new Date(state.year, state.month, 1).getDay();
+      const daysInMonth = new Date(state.year, state.month + 1, 0).getDate();
+      let html = '';
+      for (let i = 0; i < firstDay; i++) html += '<span></span>';
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = state.year === 2026 && state.month === 6 && d === 22;
+        const sel = state.selected === d ? ' bg-cobalt text-white' : (isToday ? ' border border-cobalt text-cobalt dark:text-cobalt-light' : ' hover:bg-ink/5 dark:hover:bg-white/5');
+        html += `<button data-d="${d}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs${sel}">${d}</button>`;
+      }
+      grid.innerHTML = html;
+      label.textContent = monthNames[state.month] + ' ' + state.year;
+      grid.querySelectorAll('button[data-d]').forEach(b => b.onclick = () => { state.selected = parseInt(b.dataset.d); render(); if (onSelect) onSelect(state); });
+    }
+    render();
+    return {
+      next(){ state.month++; if (state.month > 11) { state.month = 0; state.year++; } render(); },
+      prev(){ state.month--; if (state.month < 0) { state.month = 11; state.year--; } render(); }
+    };
+  }
+  const dpCal = mountCalendar('dp', { year: 2026, month: 6, selected: null }, (s) => {
+    document.getElementById('dpValue').textContent = (s.month + 1) + '/' + s.selected + '/' + s.year;
+    closePanel('dpPanel');
+  });
+  const calCal = mountCalendar('calStatic', { year: 2026, month: 6, selected: 22 }, null);
+
+  // progress
+  function bumpProgress(){
+    const bar = document.getElementById('progBar');
+    let w = parseInt(bar.style.width) || 35;
+    w = w >= 100 ? 15 : Math.min(100, w + 20);
+    bar.style.width = w + '%';
+  }
+
+  // data table
+  const tableData = [
+    { name: 'Wireless Mouse', sku: 'SKU-1042', stock: 128, price: 24.99 },
+    { name: 'Mechanical Keyboard', sku: 'SKU-1077', stock: 54, price: 89.00 },
+    { name: 'USB-C Hub', sku: 'SKU-1103', stock: 210, price: 34.50 },
+    { name: 'Desk Lamp', sku: 'SKU-1155', stock: 12, price: 42.00 },
+    { name: 'Webcam 1080p', sku: 'SKU-1201', stock: 76, price: 59.99 }
+  ];
+  let sortKey = 'name', sortDir = 1;
+  function renderTable(){
+    const rows = [...tableData].sort((a, b) => (a[sortKey] > b[sortKey] ? 1 : -1) * sortDir);
+    document.getElementById('dtBody').innerHTML = rows.map(r => `<tr class="border-t border-line dark:border-linedark"><td class="py-2.5 px-3">${r.name}</td><td class="py-2.5 px-3 font-mono text-xs text-slate dark:text-slatedark">${r.sku}</td><td class="py-2.5 px-3">${r.stock}</td><td class="py-2.5 px-3">$${r.price.toFixed(2)}</td></tr>`).join('');
+  }
+  function sortTable(key){ if (sortKey === key) sortDir *= -1; else { sortKey = key; sortDir = 1; } renderTable(); }
+  renderTable();
+
+  // chat send
+  function sendDemoMessage(){
+    const thread = document.getElementById('chatThread'), input = document.getElementById('chatInput');
+    const text = input.value.trim(); if (!text) return;
+    const row = document.createElement('div');
+    row.className = 'flex justify-end mb-3';
+    row.innerHTML = `<div class="max-w-[75%] px-3.5 py-2 rounded-2xl rounded-br-sm bg-cobalt text-white text-sm"></div>`;
+    row.querySelector('div').textContent = text;
+    thread.appendChild(row);
+    input.value = '';
+    thread.scrollTop = thread.scrollHeight;
+  }
+  document.getElementById('chatThread').scrollTop = document.getElementById('chatThread').scrollHeight;
+
+  // sonner / toast
+  function pushToast(msg, variant){
+    const stack = document.getElementById('sonnerStack');
+    const el = document.createElement('div');
+    const colors = variant === 'success' ? 'border-mint/40 bg-mint/10' : 'border-line dark:border-linedark bg-surface dark:bg-surfacedark';
+    el.className = `pointer-events-auto px-4 py-3 rounded-lg border shadow-md text-sm flex items-center gap-2 animate-fadeUp ${colors}`;
+    el.innerHTML = `<i data-lucide="${variant === 'success' ? 'check-circle' : 'bell'}" class="w-4 h-4 shrink-0"></i><span>${msg}</span>`;
+    stack.appendChild(el);
+    lucide.createIcons();
+    setTimeout(() => { el.style.transition = 'all .3s ease'; el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; setTimeout(() => el.remove(), 300); }, 2600);
+  }
+
+  // active sidebar link + reveal on scroll
+  const sidelinks = document.querySelectorAll('.sidelink');
+  const setActive = id => sidelinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+  const io = new IntersectionObserver((entries) => entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); }), { rootMargin: '-40% 0px -50% 0px' });
+  document.querySelectorAll('main section[id]').forEach(s => io.observe(s));
+  const rio = new IntersectionObserver((entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); rio.unobserve(e.target); } }), { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => rio.observe(el));
+</script>
+</body>
+</html>
