@@ -4,15 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPage from "@/pages/auth/ForgotPage";
-
-function HomePlaceholder() {
-  return (
-    <div className="card">
-      <p className="mini-tag mb-2">MODULE 1 READY</p>
-      <h1 className="font-display font-semibold text-2xl">Auth works. Dashboard lands in Module 2.</h1>
-    </div>
-  );
-}
+import DashboardPage from "@/pages/DashboardPage";
 
 export default function App() {
   return (
@@ -28,7 +20,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<HomePlaceholder />} />
+        <Route index element={<DashboardPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
