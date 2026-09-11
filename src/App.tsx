@@ -5,6 +5,8 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import ForgotPage from "@/pages/auth/ForgotPage";
 import DashboardPage from "@/pages/DashboardPage";
+import CarsPage from "@/pages/cars/CarsPage";
+import CarDetailPage from "@/pages/cars/CarDetailPage";
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="cars" element={<CarsPage />} />
+        <Route path="cars/:id" element={<CarDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
