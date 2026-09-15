@@ -8,6 +8,7 @@ import DashboardPage from "@/pages/DashboardPage";
 import CarsPage from "@/pages/cars/CarsPage";
 import CarDetailPage from "@/pages/cars/CarDetailPage";
 import CustomersPage from "@/pages/CustomersPage";
+import NewBookingPage from "@/pages/bookings/NewBookingPage";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="cars" element={<CarsPage />} />
         <Route path="cars/:id" element={<CarDetailPage />} />
         <Route path="customers" element={<CustomersPage />} />
+        <Route path="bookings/new" element={<NewBookingPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
