@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { fetchCarsFromAPI, fallbackCars } from "@/services/carApi";
+import { fetchCarsFromAPI, fallbackCars, addCarToAPI, updateCarInAPI, deleteCarFromAPI } from "@/services/carApi";
 import { keys, readJSON, writeJSON } from "@/lib/storage";
 import type { Car, CarStatus } from "@/lib/types";
 
@@ -24,7 +24,10 @@ export function CarProvider({ children }: { children: ReactNode }) {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (readJSON<Car[]>(keys.carsOverride, []).length > 0 && tick === 0) {
+    const cached = readJSON<Car[]>(keys.carsOverride, []);
+    // Old fleet was generic products (api_1..api_12). Vehicle category is api_167..api_171.
+    const isStale = cached.some((c) => c.id.startsWith("api_") && Number(c.id.slice(4)) < 167);
+    if (cached.length > 0 && tick === 0 && !isStale) {
       setLoading(false);
       return;
     }
@@ -34,14 +37,22 @@ export function CarProvider({ children }: { children: ReactNode }) {
     fetchCarsFromAPI()
       .then((list) => {
         if (!alive) return;
-        setCars(list);
-        writeJSON(keys.carsOverride, list);
+        // Keep user-added cars across refetch / source switch
+        const locals = readJSON<Car[]>(keys.carsOverride, []).filter((c) => c.id.startsWith("local_"));
+        const merged = [...list, ...locals];
+        setCars(merged);
+        writeJSON(keys.carsOverride, merged);
       })
       .catch(() => {
         if (!alive) return;
-        const fb = fallbackCars();
-        setCars(fb);
-        writeJSON(keys.carsOverride, fb);
+        const existing = readJSON<Car[]>(keys.carsOverride, []);
+        if (existing.length > 0) {
+          setCars(existing);
+        } else {
+          const fb = fallbackCars();
+          setCars(fb);
+          writeJSON(keys.carsOverride, fb);
+        }
         setError("Live API unreachable, showing cached fleet.");
       })
       .finally(() => {
@@ -62,10 +73,25 @@ export function CarProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     reload: () => setTick((t) => t + 1),
-    addCar: (c) => save([...cars, { ...c, id: `local_${Date.now()}` }]),
-    updateCar: (id, patch) => save(cars.map((c) => (c.id === id ? { ...c, ...patch } : c))),
-    removeCar: (id) => save(cars.filter((c) => c.id !== id)),
-    setStatus: (id, status) => save(cars.map((c) => (c.id === id ? { ...c, status } : c))),
+    addCar: (c) => {
+      save([...cars, { ...c, id: `local_${Date.now()}` }]);
+      // Simulated POST — visible in DevTools Network, not persisted by DummyJSON
+      addCarToAPI(c).catch(() => {});
+    },
+    updateCar: (id, patch) => {
+      save(cars.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+      // Simulated PUT — visible in DevTools Network, not persisted by DummyJSON
+      updateCarInAPI(id, patch).catch(() => {});
+    },
+    removeCar: (id) => {
+      save(cars.filter((c) => c.id !== id));
+      // Simulated DELETE — visible in DevTools Network, not persisted by DummyJSON
+      deleteCarFromAPI(id).catch(() => {});
+    },
+    setStatus: (id, status) => {
+      save(cars.map((c) => (c.id === id ? { ...c, status } : c)));
+      updateCarInAPI(id, { status }).catch(() => {});
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
