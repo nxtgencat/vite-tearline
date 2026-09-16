@@ -1,5 +1,5 @@
 import axios from "axios";
-import { priceForProduct } from "@/services/carApi";
+import { priceForCarId, bookingCarId } from "@/services/carApi";
 import type { Booking, BookingStatus } from "@/lib/types";
 
 interface DummyCartProduct {
@@ -25,8 +25,7 @@ function statusFor(idx: number): BookingStatus {
 }
 
 // MANY bookings: 50 carts x up to 4 products ≈ 150+ rentals.
-// carId/customerId are folded into the 1–100 range so they always
-// resolve to a loaded car/customer.
+// Every booking resolves to a real fleet/live car (never cosmetics).
 export async function fetchBookingsFromAPI(cartLimit = 50): Promise<Booking[]> {
   const res = await axios.get<{ carts: DummyCart[] }>(
     `https://dummyjson.com/carts?limit=${cartLimit}&skip=0&select=id,userId,products`
@@ -37,17 +36,17 @@ export async function fetchBookingsFromAPI(cartLimit = 50): Promise<Booking[]> {
   for (const cart of res.data.carts) {
     const custN = ((cart.userId - 1) % 100) + 1;
     for (const p of cart.products.slice(0, 4)) {
-      const carN = ((p.id - 1) % 100) + 1;
+      const carId = bookingCarId(idx);
       const days = (p.quantity % 7) + 1;
       const pickup = new Date(today);
       pickup.setDate(pickup.getDate() - ((cart.id * 3 + idx * 2) % 60));
       const ret = new Date(pickup);
       ret.setDate(ret.getDate() + days);
-      const totalCost = days * priceForProduct(carN);
+      const totalCost = days * priceForCarId(carId);
       out.push({
         id: `api_booking_${cart.id}_${p.id}_${idx}`,
         customerId: `user_${custN}`,
-        carId: `api_${carN}`,
+        carId,
         pickupDate: toISO(pickup),
         returnDate: toISO(ret),
         days,

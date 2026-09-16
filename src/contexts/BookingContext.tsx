@@ -25,9 +25,15 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const cached = readJSON<Booking[]>(keys.bookings, []);
-    // Old cache had a handful of local bookings — refetch 150+ from carts
+    // Cosmetics-era bookings point at api_1..api_100 — new ones use
+    // fleet_/live-vehicle ids. Refetch when stale refs exist.
+    const hasStaleRefs = cached.some((b) => {
+      if (!b.carId.startsWith("api_")) return false;
+      const n = Number(b.carId.slice(4));
+      return Number.isFinite(n) && n <= 100;
+    });
     const apiCount = cached.filter((b) => b.id.startsWith("api_booking_")).length;
-    if (apiCount >= 50 && tick === 0) {
+    if (apiCount >= 50 && !hasStaleRefs && tick === 0) {
       setLoading(false);
       return;
     }

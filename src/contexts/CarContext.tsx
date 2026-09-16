@@ -25,13 +25,15 @@ export function CarProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const cached = readJSON<Car[]>(keys.carsOverride, []);
-    // Old fleet was 5 vehicle-category cars or generic products.
-    // New fleet is 100 catalog products — refetch when cache is small/stale.
-    const isStale =
-      cached.some((c) => c.id.startsWith("api_") && Number(c.id.slice(4)) < 1) ||
-      (cached.filter((c) => c.id.startsWith("api_")).length > 0 &&
-        cached.filter((c) => c.id.startsWith("api_")).length < 20);
-    if (cached.length >= 20 && tick === 0 && !isStale) {
+    // Cosmetics-era cache used api_1..api_100 — live vehicles are only
+    // 113-117 + 167-171. Refetch when cosmetics or no fleet cars present.
+    const hasCosmetics = cached.some((c) => {
+      if (!c.id.startsWith("api_")) return false;
+      const n = Number(c.id.slice(4));
+      return Number.isFinite(n) && n <= 100;
+    });
+    const hasFleet = cached.some((c) => c.id.startsWith("fleet_"));
+    if (cached.length >= 20 && hasFleet && !hasCosmetics && tick === 0) {
       setLoading(false);
       return;
     }
