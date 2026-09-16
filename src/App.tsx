@@ -11,6 +11,7 @@ import CustomersPage from "@/pages/CustomersPage";
 import NewBookingPage from "@/pages/bookings/NewBookingPage";
 import BookingsPage from "@/pages/bookings/BookingsPage";
 import AvailabilityPage from "@/pages/AvailabilityPage";
+import ReportsPage from "@/pages/ReportsPage";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="bookings/new" element={<NewBookingPage />} />
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="availability" element={<AvailabilityPage />} />
+        <Route path="reports" element={<ReportsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
