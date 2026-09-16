@@ -11,14 +11,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const v = validateLogin(email, password);
     setErrors(v);
     if (Object.keys(v).length > 0) return;
-    const err = login(email, password);
+    setBusy(true);
+    const err = await login(email, password);
+    setBusy(false);
     if (err) {
       setErrors({ form: err });
       return;
@@ -27,15 +30,23 @@ export default function LoginPage() {
     nav("/");
   }
 
+  function fillDemo() {
+    setEmail("emilys");
+    setPassword("emilyspass");
+  }
+
   return (
     <div className="min-h-screen grid place-items-center bg-paper p-4">
       <div className="card w-full max-w-md">
         <span className="ticket-tag">DRIVELINE · FLEET OS</span>
         <h1 className="font-display font-semibold text-3xl mt-4">Login</h1>
         <p className="text-sm text-slate mt-1 mb-6">Access your rental dashboard</p>
+        <button type="button" onClick={fillDemo} className="w-full mb-4 text-xs p-2.5 rounded-lg bg-cobalt/10 text-cobalt font-medium hover:bg-cobalt/15">
+          Use DummyJSON demo — emilys / emilyspass
+        </button>
         <form onSubmit={submit} className="space-y-4">
-          <Field label="Email" error={errors.email}>
-            <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="manager@driveline.com" />
+          <Field label="Email or username" error={errors.email}>
+            <input className="field" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="emilys or manager@driveline.com" />
           </Field>
           <Field label="Password" error={errors.password}>
             <div className="relative">
@@ -52,8 +63,8 @@ export default function LoginPage() {
             </div>
           </Field>
           {errors.form && <p className="text-xs text-rose">{errors.form}</p>}
-          <button className="btn-primary w-full" type="submit">
-            Login
+          <button className="btn-primary w-full" type="submit" disabled={busy}>
+            {busy ? "Signing in…" : "Login"}
           </button>
         </form>
         <div className="flex justify-between mt-5 text-sm">

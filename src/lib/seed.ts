@@ -21,4 +21,13 @@ export const seedCustomers = [
   { id: "cust_seed_1", name: "Aarav Sharma", email: "aarav@mail.com", mobile: "9876543210", address: "12 MG Road, Pune", license: "MH12-202100123", createdAt: new Date().toISOString() },
   { id: "cust_seed_2", name: "Diya Patel", email: "diya@mail.com", mobile: "9822001122", address: "45 FC Road, Pune", license: "MH14-201900456", createdAt: new Date().toISOString() },
   { id: "cust_seed_3", name: "Kabir Singh", email: "kabir@mail.com", mobile: "9811002233", address: "8 Park Street, Mumbai", license: "MH02-202000789", createdAt: new Date().toISOString() },
+  { id: "cust_seed_4", name: "Ananya Iyer", email: "ananya@mail.com", mobile: "9845001122", address: "22 Brigade Road, Bengaluru", license: "KA05-202101234", createdAt: new Date().toISOString() },
+  { id: "cust_seed_5", name: "Rohan Mehta", email: "rohan@mail.com", mobile: "9890102030", address: "7 Linking Road, Mumbai", license: "MH02-201804567", createdAt: new Date().toISOString() },
+  { id: "cust_seed_6", name: "Sneha Kulkarni", email: "sneha@mail.com", mobile: "9764008899", address: "3 SB Road, Pune", license: "MH12-201907891", createdAt: new Date().toISOString() },
+  { id: "cust_seed_7", name: "Vikram Rao", email: "vikram@mail.com", mobile: "9886001234", address: "15 HSR Layout, Bengaluru", license: "KA01-202002345", createdAt: new Date().toISOString() },
+  { id: "cust_seed_8", name: "Priya Nair", email: "priya@mail.com", mobile: "9745006789", address: "9 Marine Drive, Kochi", license: "KL07-201906789", createdAt: new Date().toISOString() },
+  { id: "cust_seed_9", name: "Arjun Malhotra", email: "arjun@mail.com", mobile: "9811088100", address: "21 CP, New Delhi", license: "DL08-202103456", createdAt: new Date().toISOString() },
+  { id: "cust_seed_10", name: "Kavya Reddy", email: "kavya@mail.com", mobile: "9703004567", address: "4 Banjara Hills, Hyderabad", license: "TS09-202007890", createdAt: new Date().toISOString() },
+  { id: "cust_seed_11", name: "Aditya Joshi", email: "aditya@mail.com", mobile: "9823009876", address: "11 JM Road, Pune", license: "MH12-201805432", createdAt: new Date().toISOString() },
+  { id: "cust_seed_12", name: "Meera Das", email: "meera@mail.com", mobile: "9836002345", address: "6 Salt Lake, Kolkata", license: "WB06-201901098", createdAt: new Date().toISOString() },
 ];

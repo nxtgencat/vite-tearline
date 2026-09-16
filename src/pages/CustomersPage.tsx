@@ -11,7 +11,7 @@ import type { Customer } from "@/lib/types";
 const PAGE_SIZE = 6;
 
 export default function CustomersPage() {
-  const { customers, addCustomer, updateCustomer, removeCustomer } = useCustomers();
+  const { customers, loading, error, reload, addCustomer, updateCustomer, removeCustomer } = useCustomers();
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -28,6 +28,22 @@ export default function CustomersPage() {
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pages);
   const rows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <span className="ticket-tag">CRM</span>
+        <h1 className="font-display font-semibold text-3xl mt-3">Customers</h1>
+        <div className="card p-0 overflow-hidden">
+          <div className="p-3 space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="skeleton h-12" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -46,6 +62,15 @@ export default function CustomersPage() {
           Add customer
         </button>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-lg bg-amber/10 text-sm flex justify-between gap-3">
+          <span>{error}</span>
+          <button className="text-cobalt font-medium" onClick={reload}>
+            Retry
+          </button>
+        </div>
+      )}
 
       <Card>
         <input className="field max-w-md" placeholder="Search name, email or mobile…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />

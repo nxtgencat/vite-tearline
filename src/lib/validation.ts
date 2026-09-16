@@ -6,7 +6,10 @@ export function isEmail(v: string): boolean {
 
 export function validateLogin(email: string, password: string): Errors {
   const e: Errors = {};
-  if (!isEmail(email)) e.email = "Enter a valid email";
+  const v = email.trim();
+  if (!v) e.email = "Enter your email or username";
+  else if (v.includes("@") && !isEmail(v)) e.email = "Enter a valid email";
+  else if (!v.includes("@") && v.length < 3) e.email = "Enter a valid username";
   if (!password) e.password = "Password is required";
   return e;
 }

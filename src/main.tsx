@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import App from "./App.tsx";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CarProvider } from "@/contexts/CarContext";
 import { CustomerProvider } from "@/contexts/CustomerContext";
 import { BookingProvider } from "@/contexts/BookingContext";
@@ -13,16 +14,18 @@ import { BookingProvider } from "@/contexts/BookingContext";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <CarProvider>
-          <CustomerProvider>
-            <BookingProvider>
-              <App />
-              <ToastContainer position="top-right" autoClose={2500} />
-            </BookingProvider>
-          </CustomerProvider>
-        </CarProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <CarProvider>
+            <CustomerProvider>
+              <BookingProvider>
+                <App />
+                <ToastContainer position="top-right" autoClose={2500} />
+              </BookingProvider>
+            </CustomerProvider>
+          </CarProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>
 );

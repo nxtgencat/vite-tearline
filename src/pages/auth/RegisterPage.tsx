@@ -12,14 +12,17 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const v = validateRegister(name, email, password);
     setErrors(v);
     if (Object.keys(v).length > 0) return;
-    const err = register(name, email, password);
+    setBusy(true);
+    const err = await register(name, email, password);
+    setBusy(false);
     if (err) {
       setErrors({ form: err });
       return;
@@ -56,8 +59,8 @@ export default function RegisterPage() {
             </div>
           </Field>
           {errors.form && <p className="text-xs text-rose">{errors.form}</p>}
-          <button className="btn-primary w-full" type="submit">
-            Create account
+          <button className="btn-primary w-full" type="submit" disabled={busy}>
+            {busy ? "Creating…" : "Create account"}
           </button>
         </form>
         <p className="mt-5 text-sm text-center">

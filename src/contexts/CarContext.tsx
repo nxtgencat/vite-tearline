@@ -25,9 +25,13 @@ export function CarProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const cached = readJSON<Car[]>(keys.carsOverride, []);
-    // Old fleet was generic products (api_1..api_12). Vehicle category is api_167..api_171.
-    const isStale = cached.some((c) => c.id.startsWith("api_") && Number(c.id.slice(4)) < 167);
-    if (cached.length > 0 && tick === 0 && !isStale) {
+    // Old fleet was 5 vehicle-category cars or generic products.
+    // New fleet is 100 catalog products — refetch when cache is small/stale.
+    const isStale =
+      cached.some((c) => c.id.startsWith("api_") && Number(c.id.slice(4)) < 1) ||
+      (cached.filter((c) => c.id.startsWith("api_")).length > 0 &&
+        cached.filter((c) => c.id.startsWith("api_")).length < 20);
+    if (cached.length >= 20 && tick === 0 && !isStale) {
       setLoading(false);
       return;
     }

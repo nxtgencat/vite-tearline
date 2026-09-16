@@ -12,7 +12,7 @@ import type { Booking } from "@/lib/types";
 import { currency, shortDate } from "@/lib/format";
 
 export default function BookingsPage() {
-  const { bookings, setStatus } = useBookings();
+  const { bookings, loading, error, reload, setStatus } = useBookings();
   const { cars, setStatus: setCarStatus } = useCars();
   const { customers } = useCustomers();
   const [q, setQ] = useState("");
@@ -51,6 +51,20 @@ export default function BookingsPage() {
     setSelected(null);
   }
 
+  if (loading) {
+    return (
+      <div className="space-y-5">
+        <span className="ticket-tag">HISTORY</span>
+        <h1 className="font-display font-semibold text-3xl mt-3">Bookings</h1>
+        <div className="card p-3 space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="skeleton h-12" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -62,6 +76,15 @@ export default function BookingsPage() {
           New booking
         </Link>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-lg bg-amber/10 text-sm flex justify-between gap-3">
+          <span>{error}</span>
+          <button className="text-cobalt font-medium" onClick={reload}>
+            Retry
+          </button>
+        </div>
+      )}
 
       <Card>
         <div className="grid sm:grid-cols-3 gap-3">
