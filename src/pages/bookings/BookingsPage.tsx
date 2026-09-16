@@ -30,10 +30,12 @@ export default function BookingsPage() {
     return bookings.filter((b) => {
       if (status !== "All" && b.status !== status) return false;
       if (date && !(b.pickupDate <= date && date <= b.returnDate)) return false;
-      const hay = `${carLabel(b.carId)} ${custLabel(b.customerId)}`.toLowerCase();
+      const car = cars.find((x) => x.id === b.carId);
+      const cust = customers.find((x) => x.id === b.customerId);
+      const hay = `${car ? `${car.brand} ${car.model}` : b.carId} ${cust?.name || "Customer"}`.toLowerCase();
       return hay.includes(q.toLowerCase());
     });
-  }, [bookings, q, status, date]);
+  }, [bookings, q, status, date, cars, customers]);
 
   function cancel(b: Booking) {
     setStatus(b.id, "cancelled");
