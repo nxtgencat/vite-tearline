@@ -10,6 +10,7 @@ import CarDetailPage from "@/pages/cars/CarDetailPage";
 import CustomersPage from "@/pages/CustomersPage";
 import NewBookingPage from "@/pages/bookings/NewBookingPage";
 import BookingsPage from "@/pages/bookings/BookingsPage";
+import AvailabilityPage from "@/pages/AvailabilityPage";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="customers" element={<CustomersPage />} />
         <Route path="bookings/new" element={<NewBookingPage />} />
         <Route path="bookings" element={<BookingsPage />} />
+        <Route path="availability" element={<AvailabilityPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
