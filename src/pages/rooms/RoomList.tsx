@@ -11,6 +11,7 @@ import Skeleton from '@/components/Skeleton';
 import Spinner from '@/components/Spinner';
 import { useHotel } from '@/context/HotelContext';
 import { usePagination } from '@/hooks/usePagination';
+import { ROOM_IMAGES } from '@/lib/seed';
 import type { Room, RoomType } from '@/lib/types';
 
 const TYPES: Array<RoomType | 'All'> = ['All', 'Single', 'Double', 'Deluxe', 'Suite', 'Family'];
@@ -91,7 +92,7 @@ export default function RoomList() {
       capacity: Number(values.capacity),
       floor: Number(values.floor),
       amenities: values.amenities.split(',').map((s) => s.trim()).filter(Boolean),
-      image: values.image || `https://picsum.photos/seed/hotel${values.number}/600/400`,
+      image: values.image || ROOM_IMAGES[Number(values.number) % ROOM_IMAGES.length] || ROOM_IMAGES[0],
       description: values.description || `${values.type} room ${values.number}`,
       available: Boolean(values.available),
     };

@@ -1,5 +1,17 @@
 import type { Booking, Guest, Payment, Room } from '@/lib/types';
 
+// Curated hotel room photos, cycled by room so every room looks like a room.
+export const ROOM_IMAGES = [
+  'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=600&q=60',
+  'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=600&q=60',
+];
+
 // Local fallback rooms used when DummyJSON is unreachable.
 export const fallbackRooms: Room[] = [
   {
@@ -11,7 +23,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC'],
     floor: 1,
     available: true,
-    image: 'https://picsum.photos/seed/hotel101/600/400',
+    image: ROOM_IMAGES[0],
     description: 'Cozy single room with city view.',
   },
   {
@@ -23,7 +35,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC', 'Mini Bar'],
     floor: 1,
     available: true,
-    image: 'https://picsum.photos/seed/hotel102/600/400',
+    image: ROOM_IMAGES[1],
     description: 'Comfortable double room for two guests.',
   },
   {
@@ -35,7 +47,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Balcony'],
     floor: 2,
     available: false,
-    image: 'https://picsum.photos/seed/hotel201/600/400',
+    image: ROOM_IMAGES[2],
     description: 'Spacious deluxe room with balcony.',
   },
   {
@@ -47,7 +59,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC', 'Mini Bar', 'Jacuzzi', 'Lounge'],
     floor: 2,
     available: true,
-    image: 'https://picsum.photos/seed/hotel202/600/400',
+    image: ROOM_IMAGES[3],
     description: 'Luxury suite with lounge and jacuzzi.',
   },
   {
@@ -59,7 +71,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC', 'Kitchen', 'Sofa Bed'],
     floor: 3,
     available: true,
-    image: 'https://picsum.photos/seed/hotel301/600/400',
+    image: ROOM_IMAGES[4],
     description: 'Large family room with kitchen corner.',
   },
   {
@@ -71,7 +83,7 @@ export const fallbackRooms: Room[] = [
     amenities: ['WiFi', 'TV', 'AC', 'Balcony'],
     floor: 3,
     available: true,
-    image: 'https://picsum.photos/seed/hotel302/600/400',
+    image: ROOM_IMAGES[5],
     description: 'Deluxe triple room with garden view.',
   },
 ];

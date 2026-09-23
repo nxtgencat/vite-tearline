@@ -1,4 +1,4 @@
-import { fallbackRooms } from '@/lib/seed';
+import { ROOM_IMAGES, fallbackRooms } from '@/lib/seed';
 import type { Room, RoomType } from '@/lib/types';
 
 const TYPES: RoomType[] = ['Single', 'Double', 'Deluxe', 'Suite', 'Family'];
@@ -25,7 +25,7 @@ function toRoom(p: DummyProduct, index: number): Room {
     amenities: AMENITY_POOL.slice(0, 3 + (p.id % 4)),
     floor,
     available: p.id % 4 !== 0,
-    image: `https://picsum.photos/seed/hotel${p.id}/600/400`,
+    image: ROOM_IMAGES[p.id % ROOM_IMAGES.length],
     description: p.description || p.title,
   };
 }
