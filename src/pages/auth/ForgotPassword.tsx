@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function ForgotPassword() {
   const { register, handleSubmit, formState: { errors } } = useForm<{ email: string }>();
@@ -10,7 +11,10 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-paper">
+    <div className="min-h-screen grid place-items-center px-4 bg-paper relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="card w-full max-w-md">
         <span className="ticket-tag">HOTEL · RECOVERY</span>
         <h1 className="font-display font-semibold text-3xl mt-3 tracking-tight">Reset password</h1>

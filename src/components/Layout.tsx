@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: '◧' },
@@ -56,6 +57,7 @@ export default function Layout() {
             <p className="font-display font-semibold lg:hidden">Harbor Stay</p>
             <div className="ml-auto flex items-center gap-2">
               <span className="hidden sm:block text-xs text-slate">{user?.email}</span>
+              <ThemeToggle />
               <button onClick={handleLogout} className="btn-ghost border border-line lg:hidden">
                 Logout
               </button>

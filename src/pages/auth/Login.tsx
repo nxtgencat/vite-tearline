@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '@/context/AuthContext';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface FormValues {
   email: string;
@@ -26,7 +27,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 bg-paper">
+    <div className="min-h-screen grid place-items-center px-4 bg-paper relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="card w-full max-w-md">
         <span className="ticket-tag">HOTEL · STAFF LOGIN</span>
         <h1 className="font-display font-semibold text-3xl mt-3 tracking-tight">Harbor Stay</h1>

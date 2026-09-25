@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
+/* Class-based dark mode for Tailwind v4 (toggled via `.dark` on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
+  /* Light theme (default). Dark overrides live in `.dark` below. */
   --color-paper: #f6f5f1;
   --color-surface: #ffffff;
   --color-ink: #1b1d22;
@@ -20,16 +24,68 @@
   --font-mono: "IBM Plex Mono", monospace;
 }
 
+/*
+ * Dark theme — single source of truth.
+ * Every component uses semantic tokens (paper/surface/ink/slate/line),
+ * so redefining the tokens here flips the whole UI at once. No per-component
+ * `dark:` classes needed, which is what caused half-light/half-dark bugs.
+ */
+.dark {
+  --color-paper: #101216;
+  --color-surface: #181c23;
+  --color-ink: #ece9e0;
+  --color-slate: #9aa1ad;
+  --color-line: #2a303b;
+  --color-cobalt: #7b8fff;
+  --color-cobalt-dark: #a3b1ff;
+  --color-cobalt-light: #7b8fff;
+  --color-amber: #f0b65c;
+  --color-amber-light: #f0b65c;
+  --color-mint: #3dbe86;
+  --color-mint-light: #3dbe86;
+  --color-rose: #f16565;
+  --color-rose-light: #f16565;
+}
+
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+html {
+  background-color: var(--color-paper);
+}
+
 body {
-  background-color: #f6f5f1;
-  color: #1b1d22;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
   font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }
 
 ::selection {
   background: #2a4cdb;
   color: #fff;
+}
+
+.dark ::selection {
+  background: #7b8fff;
+  color: #101216;
+}
+
+/* Keep bright photos from blinding in dark mode. */
+.dark img {
+  filter: brightness(0.92);
 }
 
 @layer components {
@@ -50,6 +106,10 @@ body {
   }
   .field {
     @apply w-full px-4 py-2.5 rounded-lg bg-surface border border-line text-sm placeholder:text-slate/60 focus:border-cobalt outline-none transition-all;
+    color-scheme: light;
+  }
+  .dark .field {
+    color-scheme: dark;
   }
   .card {
     @apply p-6 rounded-xl bg-surface shadow-sm border border-line/60;
@@ -71,6 +131,10 @@ body {
     background-size: 400px 100%;
     animation: shimmer 1.6s infinite linear;
   }
+  .dark .skeleton {
+    background: linear-gradient(90deg, #222834 25%, #2c3442 37%, #222834 63%);
+    background-size: 400px 100%;
+  }
   .sidebar-link {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate hover:bg-ink/5 hover:text-ink transition-colors;
   }
@@ -86,4 +150,14 @@ body {
   100% {
     background-position: 400px 0;
   }
+}
+
+/* react-toastify follows the theme instead of staying light in dark mode. */
+.dark .Toastify__toast {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+}
+.dark .Toastify__close-button {
+  color: var(--color-slate);
 }

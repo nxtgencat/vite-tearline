@@ -7,16 +7,19 @@ import './index.css';
 import App from './App.tsx';
 import { AuthProvider } from '@/context/AuthContext';
 import { HotelProvider } from '@/context/HotelContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <HotelProvider>
-          <App />
-          <ToastContainer position="bottom-right" autoClose={2500} />
-        </HotelProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <HotelProvider>
+            <App />
+            <ToastContainer position="bottom-right" autoClose={2500} />
+          </HotelProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 );
